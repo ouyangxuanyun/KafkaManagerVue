@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Broker View</title>
+    <link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+    <link rel='stylesheet' href='/bootstrap-3.3.5/css/bootstrap.min.css'>
+    <link rel="stylesheet" media="screen" href="/stylesheets/index.min.css">
+    <link rel="stylesheet" media="screen" href="/dataTables/stylesheets/dataTables.bootstrap.css">
+    <link rel="stylesheet" media="screen" href="/chartist/stylesheets/chartist.min.css">
+    <script src="/chartist/javascripts/chartist.min.js"></script>
+    <script src="/jquery-2.1.4/jquery.min.js"></script>
+    <script src="/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+    <script src="/dataTables/javascripts/jquery.dataTables.min.js"></script>
+    <script src="/dataTables/javascripts/dataTables.bootstrap.js"></script>
+
+    <script src="/javascripts/vue.js"></script>
+</head>
+<style>
+    [v-cloak] {
+        display: none !important;
+    }
+</style>
+
+<body role="document">
+<div id="vueTemp">
+    <div class="navbar navbar-default " role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <!--  Display three horizontal lines when navbar collapsed. -->
+                    <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span>
+                </button>
+                <img src="/images/favicon.png">
+                <a class="navbar-brand un-float-me" href="/">
+                    Kafka Manager</a><span v-cloak class="label label-primary">{{ clustername }}</span>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Cluster<span
+                                class="caret"></span></a>
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a href="/addCluster">Add Cluster</a></li>
+                            <li class="active"><a :href="'/clusters/' +  clustername ">Summary</a></li>
+                            <li><a href="/">List</a></li>
+                        </ul>
+                    </li>
+                    <li><a :href="'/clusters/' +  clustername  + '/brokers'">Brokers</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Topic<span class="caret"></span></a>
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a :href="'/clusters/' + clustername + '/createTopic'">Create</a></li>
+                            <li><a :href="'/clusters/' + clustername + '/topics'">List</a></li>
+                        </ul>
+                    </li>
+                    <li><a :href="'/clusters/' +  clustername  + '/consumers'">Consumers</a></li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="container" role="main">
+        <ol class="breadcrumb">
+            <li><a href="/">Clusters</a></li>
+            <li v-cloak><a :href="'/clusters/' +  clustername ">{{ clustername }}</a></li>
+            <li><a :href="'/clusters/' + clustername + '/brokers'">Brokers</a></li>
+            <li class="active" v-cloak>{{ brokerlistId }}</li>
+        </ol>
+
+        <div class="col-md-12 un-pad-me">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 v-cloak>
+                        <button type="button" class="btn btn-link" onclick="goBack()">
+                                <span
+                                        class="glyphicon glyphicon-arrow-left" aria-hidden="true">
+                                </span>
+                        </button>
+                        Broker Id {{ brokerlistId }}
+                    </h3>
+                </div>
+                <div class="row">
+                    <div class="col-md-7">
+                        <div class="panel panel-default">
+                            <div class="panel-heading"><h4>Summary</h4></div>
+                            <table class="table">
+                                <tbody v-cloak>
+                                <tr>
+                                    <td># of Topics</td>
+                                    <td>{{ topiclistdetail[0] }}</td>
+                                </tr>
+                                <tr>
+                                    <td># of Partitions</td>
+                                    <td>{{ topiclistdetail[1] }}</td>
+                                </tr>
+                                <tr>
+                                    <td>% of Messages</td>
+                                    <td>{{ (100 * brokerMetric[0][0] / InOutMessage[0][0]).toFixed(2) }} %</td>
+                                </tr>
+                                <tr>
+                                    <td>% of Incoming</td>
+                                    <td>{{ (100 * brokerMetric[1][0] / InOutMessage[1][0]).toFixed(2) }} %</td>
+                                </tr>
+                                <tr>
+                                    <td>% of Outgoing</td>
+                                    <td>{{ (100 * brokerMetric[2][0] / InOutMessage[2][0]).toFixed(2) }} %</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="panel panel-default">
+                            <div class="panel-heading"><h4>Metrics</h4></div>
+                            <table class="table">
+                                <thead>
+                                <tr>
+                                    <th>Rate/sec</th>
+                                    <th>Mean</th>
+                                    <th>1&nbsp;min</th>
+                                    <th>5&nbsp;min</th>
+                                    <th>15&nbsp;min</th>
+                                </tr>
+                                </thead>
+                                <tbody v-cloak v-for="index in 6">
+                                <!--Dynamic data-->
+                                <tr>
+                                    <td>{{ addedcombinedMetrics[index - 1][4] }}</td>
+                                    <td><span
+                                            class="badge">{{ calculate(addedcombinedMetrics[index - 1][0]) }}</span>
+                                    </td>
+                                    <td><span
+                                            class="badge">{{ calculate(addedcombinedMetrics[index - 1][1]) }}</span>
+                                    </td>
+                                    <td><span
+                                            class="badge">{{ calculate(addedcombinedMetrics[index - 1][2]) }}</span>
+                                    </td>
+                                    <td><span
+                                            class="badge">{{ calculate(addedcombinedMetrics[index - 1][3]) }}</span>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h4>Per Topic Detail</h4></div>
+                    <table class="table" id="broker-table" style="table-layout: fixed; width: 100%">
+                        <thead>
+                        <tr>
+                            <th>Topic</th>
+                            <th>Replication</th>
+                            <th>Total Partitions</th>
+                            <th>Partitions on Broker</th>
+                            <th>Partitions</th>
+                            <th>Skewed?</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        <tr v-cloak v-for="(topicInfo,index) in topiclistdetail.length" :key="index"
+                            v-if="(index > 2) && (topiclistdetail[index].partitions.length !== 0)">
+                            <td><a :href="'/clusters/'+ clustername + '/topics/' + topiclistdetail[index].name "
+                                   style="word-wrap: break-word"/>{{ topiclistdetail[index].name }}
+                            </td>
+                            <td style="word-wrap: break-word">{{ topiclistdetail[index].replicationlen }}</td>
+                            <td style="word-wrap: break-word">{{ topiclistdetail[index].partitionslen }}</td>
+                            <td style="word-wrap: break-word">{{ topiclistdetail[index].paronbro }}</td>
+                            <td style="word-wrap: break-word">({{ topiclistdetail[index].partitions.join() }})</td>
+                            <td style="word-wrap: break-word">{{ topiclistdetail[index].skewed }}</td>
+                        </tr>
+                        </tbody>
+
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function goBack() {
+        window.history.back()
+    }
+    function checkBoxSelect(idPrefix, booleanValue, display) {
+        $("[id^=" + idPrefix + "]").prop("checked", booleanValue);
+    }
+
+    function selectBySubname(selectId, selectClass, display) {
+        var subname = $(selectId).val().toLowerCase();
+        $('.' + selectClass).not("[name*='" + subname + "']").css("display", "none");
+        $("[class='" + selectClass + "'][name*='" + subname + "']").css("display", display);
+        if (subname == "") {
+            $('.' + selectClass).css("display", display);
+        }
+    }
+
+    function disableSubmission() {
+        $('[type=submit]').prop('disabled', true);
+        $('[type=submit]').removeAttr('type');
+    }
+//    $(document).ready(function () {
+//        $('#broker-table').DataTable();
+//    });
+    $(document).ready(function () {
+        setTimeout(function () {
+            $('#broker-table').DataTable();
+        }, 6000)
+        });
+
+</script>
+
+
+<script type="text/javascript">
+    $.ajax({
+        url: "/get_BrokerDetail",
+        success: function (data) {
+            new Vue({
+                el: '#vueTemp',
+                data: {
+                    clustername: data.clustername,
+                    brokerlistId: data.brokerlistId,
+                    brokerMetric: data.brokerMetric,
+                    topiclistdetail: data.topiclistdetail,
+                    InOutMessage: data.InOutMessage
+                },
+                computed: {
+                    addedcombinedMetrics(){
+                        var Ratetitle = ["Messages in", "Bytes in", "Bytes out", "Bytes rejected", "Failed fetch r equest", "Failed produce request"];
+                        for (var i = 0; i < 6; i++) {
+                            this.brokerMetric[i][4] = Ratetitle[i];
+                        }
+                        return this.brokerMetric;
+                    }
+                },
+                methods: {
+                    calculate(value){
+                        var result = ''
+                        if (value < 1000) {
+                            result = value.toFixed(2)
+                        }
+                        if (value >= 1000) {
+                            result = (value / 1000).toFixed(1) + 'k'
+                        }
+                        return result;
+                    }
+                }
+            })
+        },
+        error: function (error) {
+        }
+    });
+
+</script>
+
+</body>
+</html>
+

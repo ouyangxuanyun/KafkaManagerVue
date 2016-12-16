@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Consumer List</title>
+    <link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+    <link rel='stylesheet' href='/bootstrap-3.3.5/css/bootstrap.min.css'>
+    <link rel="stylesheet" media="screen" href="/stylesheets/index.min.css">
+    <link rel="stylesheet" media="screen" href="/dataTables/stylesheets/dataTables.bootstrap.css">
+    <link rel="stylesheet" media="screen" href="/chartist/stylesheets/chartist.min.css">
+    <script src="/chartist/javascripts/chartist.min.js"></script>
+    <script src="/jquery-2.1.4/jquery.min.js"></script>
+    <script src="/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+    <script src="/dataTables/javascripts/jquery.dataTables.min.js"></script>
+    <script src="/dataTables/javascripts/dataTables.bootstrap.js"></script>
+
+    <script src="/javascripts/vue.js"></script>
+</head>
+<style>
+    [v-cloak] {
+        display: none !important;
+    }
+</style>
+
+
+<body role="document">
+<div id="vueTemp">
+
+    <div class="navbar navbar-default " role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <!--  Display three horizontal lines when navbar collapsed. -->
+                    <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span>
+                </button>
+                <img src="/images/favicon.png">
+                <a class="navbar-brand un-float-me" href="/">
+                    Kafka Manager</a><span v-cloak class="label label-primary"><template>{{ clustername }}</template></span>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Cluster<span
+                                class="caret"></span></a>
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a href="/addCluster">Add Cluster</a></li>
+                            <li class="active"><a :href="'/clusters/' +  clustername ">Summary</a></li>
+                            <li><a href="/">List</a></li>
+                        </ul>
+                    </li>
+                    <li><a :href="'/clusters/' +  clustername  + '/brokers'">Brokers</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Topic<span class="caret"></span></a>
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a :href="'/clusters/' + clustername + '/createTopic'">Create</a></li>
+                            <li><a :href="'/clusters/' + clustername + '/topics'">List</a></li>
+                        </ul>
+                    </li>
+                    <li><a :href="'/clusters/' +  clustername  + '/consumers'">Consumers</a></li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="container" role="main">
+        <ol class="breadcrumb">
+            <li><a href="/">Clusters</a></li>
+            <li><a :href="'/clusters/' + clustername "><template>{{ clustername }}</template></a></li>
+            <li class="active">Consumers</li>
+        </ol>
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Consumers</h3></div>
+                <table class="table" id="consumer-table">
+                    <thead>
+                    <tr>
+                        <th>Consumer</th>
+                        <th>Type</th>
+                        <th>Topics it consumes from</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <template v-for="i in allconsumeInfo.length">
+                        <tr>
+                            <td>{{ allconsumeInfo[i - 1][0] }}</td>
+                            <td>ZK</td>
+                            <td>
+                                <div v-if="allconsumeInfo[i - 1][2].length > 1"
+                                     v-for="j in allconsumeInfo[i - 1][2].length">
+                                    <a :href="'/clusters/' + clustername + '/consumers/' + allconsumeInfo[i - 1][0] + '/topic/' + allconsumeInfo[i - 1][2][j - 1] + '/type/ZK'">{{
+                                        allconsumeInfo[i - 1][2][j - 1] }}</a>
+                                </div>
+                                <div v-else>
+                                    <a :href="'/clusters/' + clustername + '/consumers/' +allconsumeInfo[i - 1][0] + '/topic/' + allconsumeInfo[i - 1][2][0] + '/type/ZK'">{{
+                                        allconsumeInfo[i - 1][2][0] }}</a>
+                                </div>
+                            </td>
+                        </tr>
+                    </template>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    function goBack() {
+        window.history.back()
+    }
+    function checkBoxSelect(idPrefix, booleanValue, display) {
+        $("[id^=" + idPrefix + "]").prop("checked", booleanValue);
+    }
+
+    function selectBySubname(selectId, selectClass, display) {
+        var subname = $(selectId).val().toLowerCase();
+        $('.' + selectClass).not("[name*='" + subname + "']").css("display", "none");
+        $("[class='" + selectClass + "'][name*='" + subname + "']").css("display", display);
+        if (subname == "") {
+            $('.' + selectClass).css("display", display);
+        }
+    }
+
+    function disableSubmission() {
+        $('[type=submit]').prop('disabled', true);
+        $('[type=submit]').removeAttr('type');
+    }
+</script>
+<script>
+    $(document).ready(function () {
+//        $('#consumer-table').DataTable();
+        setTimeout(function () {
+            $('#consumer-table').DataTable();
+        }, 500)
+    });
+</script>
+<script type="text/javascript">
+    $.ajax({
+        url: "/get_ConsumerList",
+        success: function (data) {
+            new Vue({
+                el: '#vueTemp',
+                data: {
+                    clustername: data.clustername,
+                    allconsumeInfo: data.allconsumeInfo
+                }
+            })
+        },
+        error: function (error) {
+        }
+    });
+
+</script>
+
+
+</body>
+</html>
+

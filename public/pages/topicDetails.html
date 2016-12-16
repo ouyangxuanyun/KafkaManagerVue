@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/html">
+<head>
+    <title>Topic View</title>
+    <link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+    <link rel='stylesheet' href='/bootstrap-3.3.5/css/bootstrap.min.css'>
+
+    <link rel="stylesheet" media="screen" href="/stylesheets/index.min.css">
+    <link rel="stylesheet" media="screen" href="/dataTables/stylesheets/dataTables.bootstrap.css">
+    <link rel="stylesheet" media="screen" href="/chartist/stylesheets/chartist.min.css">
+    <!--
+    <script data-main="/vassets/javascripts/index.js" src="/webjars/requirejs/2.1.20/require.min.js"></script>
+    -->
+    <script src="/chartist/javascripts/chartist.min.js"></script>
+
+    <script src="/jquery-2.1.4/jquery.min.js"></script>
+    <script src="/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+    <script src="/dataTables/javascripts/jquery.dataTables.min.js"></script>
+    <script src="/dataTables/javascripts/dataTables.bootstrap.js"></script>
+
+    <script src="/javascripts/vue.js"></script>
+</head>
+<body role="document">
+
+<div id="vueTemp">
+<div class="navbar navbar-default" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <!--  Display three horizontal lines when navbar collapsed. -->
+                <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span>
+            </button>
+            <img src="/images/favicon.png">
+            <a class="navbar-brand un-float-me" v-bind:href="'/'">
+                Kafka Manager</a><template><span class="label label-primary">{{clustername}}</span></template>
+        </div>
+
+        <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Cluster<span class="caret"></span></a>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a v-bind:href="'/addCluster'">Add Cluster</a></li>
+                        <li><a v-bind:href="'/clusters/'+clustername">Summary</a></li>
+                        <li><a v-bind:href="'/'">List</a></li>
+                    </ul>
+                </li>
+
+                <li><a v-bind:href="'/clusters/'+clustername+'/brokers'">Brokers</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Topic<span class="caret"></span></a>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a v-bind:href="'/clusters/'+clustername+'/createTopic'">Create</a></li>
+                        <li><a v-bind:href="'/clusters/'+clustername+'/topics'">List</a></li>
+                    </ul>
+                </li>
+
+                <li><a v-bind:href="'/clusters/'+clustername+'/consumers'">Consumers</a></li>
+
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="container" role="main">
+    <ol class="breadcrumb">
+        <li><a v-bind:href="'/'">Clusters</a></li>
+        <li><template><a v-bind:href="'/clusters/'+clustername">{{clustername}}</a></template></li>
+        <li><a v-bind:href="'/clusters/'+clustername+'/topics'">Topics</a></li>
+        <li class="active"><template>{{topic_name}}</template></li>
+    </ol>
+
+    <div class="col-md-12 un-pad-me">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3>
+                    <button type="button" class="btn btn-link" onclick="goBack()"><span
+                            class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span></button>
+                    <template>{{topic_name}}</template>
+                </h3>
+            </div>
+
+            <div class="row">
+                <div class="col-md-5">
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h4>Topic Summary</h4></div>
+                        <table class="table">
+                            <tbody>
+                            <tr>
+                                <td>Replication</td>
+                                <td><template>{{topicdetails.topicSummary.replicas}}</template></td>
+                            <tr>
+                                <td>Number of Partitions</td>
+                                <td><template>{{topicdetails.topicSummary.partitions}}</template></td>
+                            </tr>
+                            <tr>
+                                <td>Sum of partition offsets</td>
+                                <td><template>{{topicdetails.offset}}</template></td>
+                            </tr>
+                            <tr>
+                                <td>Total number of Brokers</td>
+                                <td><template>{{topicdetails.topicSummary.brokers}}</template></td>
+                            </tr>
+                            <tr>
+                                <td>Number of Brokers for Topic</td>
+                                <td><template>{{topicdetails.topicSummary.t_brokers}}</template></td>
+                            </tr>
+                            <tr>
+                                <td>Preferred Replicas %</td>
+                                <td v-bind:class="topicdetails.topicSummary.pr_rpl_class">
+                                    <template>{{topicdetails.topicSummary.prefferedReplicas}}</template>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Brokers Skewed %</td>
+                                <td v-bind:class="topicdetails.topicSummary.b_skw_class">
+                                    <template>{{topicdetails.topicSummary.brokerSkewed}}</template>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Brokers Spread %</td>
+                                <td v-bind:class="topicdetails.topicSummary.b_spr_class">
+                                    <template>{{topicdetails.topicSummary.brokerSpread}}</template>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Under-replicated %</td>
+                                <td v-bind:class="topicdetails.topicSummary.u_rpl_class">
+                                    <template>{{topicdetails.under_replicated}}</template>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Leader Size</td>
+                                <td><template>{{topicdetails.topicSummary.leaderSize}}</template></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h4>Metrics</h4></div>
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>Rate</th>
+                                <th>Mean</th>
+                                <th>1&nbsp;min</th>
+                                <th>5&nbsp;min</th>
+                                <th>15&nbsp;min</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>Messages in /sec</td>
+                                <td>
+                                    <span class="badge"><template>{{topicdetails.metrics.MessagesInPerSec[0].toFixed(2)}}</template></span>
+                                </td>
+                                <td>
+                                    <span class="badge"><template>{{topicdetails.metrics.MessagesInPerSec[1].toFixed(2)}}</template></span>
+                                </td>
+                                <td>
+                                    <span class="badge"><template>{{topicdetails.metrics.MessagesInPerSec[2].toFixed(2)}}</template></span>
+                                </td>
+                                <td>
+                                    <span class="badge"><template>{{topicdetails.metrics.MessagesInPerSec[3].toFixed(2)}}</template></span>
+                                </td>
+                            <tr>
+                            <tr>
+                                <td>Bytes in /sec</td>
+                                <td>
+                                    <span class="badge"><template>{{topicdetails.metrics.BytesInPerSec_str[0]}}</template></span>
+                                </td>
+                                <td>
+                                    <span class="badge"><template>{{topicdetails.metrics.BytesInPerSec_str[1]}}</template></span>
+                                </td>
+                                <td>
+                                    <span class="badge"><template>{{topicdetails.metrics.BytesInPerSec_str[2]}}</template></span>
+                                </td>
+                                <td>
+                                    <span class="badge"><template>{{topicdetails.metrics.BytesInPerSec_str[3]}}</template></span>
+                                </td>
+                            <tr>
+                            <tr>
+                                <td>Bytes out /sec</td>
+                                <td>
+                                    <span class="badge"><template>{{topicdetails.metrics.BytesOutPerSec_str[0]}}</template></span>
+                                </td>
+                                <td>
+                                    <span class="badge"><template>{{topicdetails.metrics.BytesOutPerSec_str[1]}}</template></span>
+                                </td>
+                                <td>
+                                    <span class="badge"><template>{{topicdetails.metrics.BytesOutPerSec_str[2]}}</template></span>
+                                </td>
+                                <td>
+                                    <span class="badge"><template>{{topicdetails.metrics.BytesOutPerSec_str[3]}}</template></span>
+                                </td>
+                            <tr>
+                            <tr>
+                                <td>Bytes rejected /sec</td>
+                                <td>
+                                    <span class="badge"><template>{{topicdetails.metrics.BytesRejectedPerSec_str[0]}}</template></span>
+                                </td>
+                                <td>
+                                    <span class="badge"><template>{{topicdetails.metrics.BytesRejectedPerSec_str[1]}}</template></span>
+                                </td>
+                                <td>
+                                    <span class="badge"><template>{{topicdetails.metrics.BytesRejectedPerSec_str[2]}}</template></span>
+                                </td>
+                                <td>
+                                    <span class="badge"><template>{{topicdetails.metrics.BytesRejectedPerSec_str[3]}}</template></span>
+                                </td>
+                            <tr>
+                            <tr>
+                                <td>Failed fetch request /sec</td>
+                                <td>
+                                    <span class="badge"><template>{{topicdetails.metrics.FailedFetchRequestsPerSec[0].toFixed(2)}}</template></span>
+                                </td>
+                                <td>
+                                    <span class="badge"><template>{{topicdetails.metrics.FailedFetchRequestsPerSec[1].toFixed(2)}}</template></span>
+                                </td>
+                                <td>
+                                    <span class="badge"><template>{{topicdetails.metrics.FailedFetchRequestsPerSec[2].toFixed(2)}}</template></span>
+                                </td>
+                                <td>
+                                    <span class="badge"><template>{{topicdetails.metrics.FailedFetchRequestsPerSec[3].toFixed(2)}}</template></span>
+                                </td>
+                            <tr>
+                            <tr>
+                                <td>Failed produce request /sec</td>
+                                <td>
+                                    <span class="badge"><template>{{topicdetails.metrics.FailedProduceRequestsPerSec[0].toFixed(2)}}</template></span>
+                                </td>
+                                <td>
+                                    <span class="badge"><template>{{topicdetails.metrics.FailedProduceRequestsPerSec[1].toFixed(2)}}</template></span>
+                                </td>
+                                <td>
+                                    <span class="badge"><template>{{topicdetails.metrics.FailedProduceRequestsPerSec[2].toFixed(2)}}</template></span>
+                                </td>
+                                <td>
+                                    <span class="badge"><template>{{topicdetails.metrics.FailedProduceRequestsPerSec[3].toFixed(2)}}</template></span>
+                                </td>
+                            <tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-md-7">
+
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h4>Partitions by Broker</h4></div>
+                        <table class="table" style="table-layout: fixed; width: 100%">
+                            <thead>
+                            <tr>
+                                <th>Broker</th>
+                                <th># of Partitions</th>
+                                <th>Partitions</th>
+                                <th>Skewed?</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-for="broker_list in topicdetails.topicSummary.broker_list">
+                            <tr>
+                                <td><a v-bind:href="'/clusters/'+clustername+'/brokers/'+broker_list.broker">{{broker_list.broker}}</a></td>
+                                <td>{{broker_list.partitions}}</td>
+                                <td style="word-wrap: break-word">{{broker_list.list}}</td>
+                                <td class="danger" v-if="topicdetails.topicSummary.brokerSkewed != 0">true</td>
+                                <td class="" v-else>false</td>
+                            </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h4>Consumers consuming from this topic</h4></div>
+                        <table class="table">
+                            <tbody>
+                            <template v-for="cg in consumers">
+                            <tr>
+                                <td><a v-bind:href="'/clusters/'+clustername+'/consumers/'+cg+'/topic/'+topic_name+'/type/'+'ZK'">{{cg}}</a></td>
+                                <td>ZK</td>
+                            </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h4>Partition Information</h4></div>
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>Partition</th>
+                                <th>Latest Offset</th>
+                                <th>Leader</th>
+                                <th>Replicas</th>
+                                <th>In Sync Replicas</th>
+                                <th>Preferred Leader?</th>
+                                <th>Under Replicated?</th>
+                                <th>Leader Size</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-for="partitions_list in topicdetails.topicSummary.partitions_list">
+                            <tr>
+                                <td>{{partitions_list.parition_id}}</td>
+                                <td>{{partitions_list.p_offset}}</td>
+                                <td class="">
+                                    <a v-bind:href="'/clusters/'+clustername+'/brokers/'+partitions_list.leader">{{partitions_list.leader}}</a>
+                                </td>
+                                <td style="word-wrap: break-word">{{partitions_list.replica_list}}</td>
+                                <td style="word-wrap: break-word">{{partitions_list.isr_list}}</td>
+                                <td v-if="partitions_list.prefferedLeader==false" class="danger">{{partitions_list.prefferedLeader}}</td>
+                                <td v-else class="">{{partitions_list.prefferedLeader}}</td>
+                                <td v-if="partitions_list.u_r_flag==true" class="danger">{{partitions_list.u_r_flag}}</td>
+                                <td v-else class="">{{partitions_list.u_r_flag}}</td>
+                                <td>{{topicdetails.topicSummary.leaderSize}}</td>
+                            </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<script>
+    function goBack() {
+        window.history.back()
+    }
+
+    function checkBoxSelect(idPrefix, booleanValue, display) {
+        $("[id^=" + idPrefix + "]").prop("checked", booleanValue);
+    }
+
+    function selectBySubname(selectId, selectClass, display) {
+        var subname = $(selectId).val().toLowerCase();
+        $('.' + selectClass).not("[name*='" + subname + "']").css("display", "none");
+        $("[class='" + selectClass + "'][name*='" + subname + "']").css("display", display);
+        if (subname == "") {
+            $('.' + selectClass).css("display", display);
+        }
+    }
+
+    function disableSubmission() {
+        $('[type=submit]').prop('disabled', true);
+        $('[type=submit]').removeAttr('type');
+    }
+
+    $.ajax({
+        url: "/getTopicDetails",
+        //data: {},
+        success: function (result) {
+            new Vue({
+                el: '#vueTemp',
+                data: {
+                    topicdetails:result.topicdetails,
+                    clustername:result.clustername,
+                    topic_name:result.topic_name,
+                    consumers:result.consumers
+                }
+            })
+        },
+        error: function (error) {
+        }
+    });
+
+</script>
+</body>
+</html>

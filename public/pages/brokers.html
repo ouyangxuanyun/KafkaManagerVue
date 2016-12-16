@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Broker List</title>
+  <link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+  <link rel='stylesheet' href='/bootstrap-3.3.5/css/bootstrap.min.css'>
+  <link rel="stylesheet" media="screen" href="/stylesheets/index.min.css">
+  <link rel="stylesheet" media="screen" href="/dataTables/stylesheets/dataTables.bootstrap.css">
+  <link rel="stylesheet" media="screen" href="/chartist/stylesheets/chartist.min.css">
+  <script src="/chartist/javascripts/chartist.min.js"></script>
+  <script src="/jquery-2.1.4/jquery.min.js"></script>
+  <script src="/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+  <script src="/dataTables/javascripts/jquery.dataTables.min.js"></script>
+  <script src="/dataTables/javascripts/dataTables.bootstrap.js"></script>
+
+  <script src="/javascripts/vue.js"></script>
+
+  <script type="text/javascript" src="http://cdn.hcharts.cn/highcharts/highcharts.js"></script>
+  <script type="text/javascript" src="http://cdn.hcharts.cn/highcharts/modules/exporting.js"></script>
+  <script type="text/javascript" src="http://cdn.hcharts.cn/highcharts/highcharts-more.js"></script>
+</head>
+
+
+<body role="document">
+<div id="vueTemp">
+  <div class="navbar navbar-default " role="navigation">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+          <!--  Display three horizontal lines when navbar collapsed. -->
+          <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span>
+        </button>
+        <img src="/images/favicon.png">
+        <a class="navbar-brand un-float-me" href="/">
+          Kafka Manager</a><span class="label label-primary"><template>{{ clustername }}</template></span>
+      </div>
+      <div class="navbar-collapse collapse">
+        <ul class="nav navbar-nav">
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Cluster<span
+              class="caret"></span></a>
+            <ul class="dropdown-menu" role="menu">
+              <li><a href="/addCluster">Add Cluster</a></li>
+              <li class="active"><a :href="'/clusters/' +  clustername ">Summary</a></li>
+              <li><a href="/">List</a></li>
+            </ul>
+          </li>
+          <li><a :href="'/clusters/' +  clustername  + '/brokers'">Brokers</a></li>
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Topic<span class="caret"></span></a>
+            <ul class="dropdown-menu" role="menu">
+              <li><a :href="'/clusters/' + clustername + '/createTopic'">Create</a></li>
+              <li><a :href="'/clusters/' + clustername + '/topics'">List</a></li>
+            </ul>
+          </li>
+          <li><a :href="'/clusters/' +  clustername  + '/consumers'">Consumers</a></li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="container" role="main">
+    <ol class="breadcrumb">
+      <li><a href="/">Clusters</a></li>
+      <li><a :href="'/clusters/' +  clustername">
+        <template>{{clustername}}</template>
+      </a></li>
+      <li class="active">Brokers</li>
+    </ol>
+
+    <div class="col-md-7 un-pad-me">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3>
+            <button type="button" class="btn btn-link" onclick="goBack()">
+              <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
+            </button>
+            Brokers
+          </h3>
+        </div>
+        <table class="table">
+          <thead>
+          <tr>
+            <td>Id</td>
+            <td>Host</td>
+            <td>Port</td>
+            <td>JMX Port</td>
+            <td>Time</td>
+            <td>Version</td>
+          </tr>
+          </thead>
+
+          <tbody>
+          <!--Dynamic data-->
+          <template v-for="Broker in BrokerList">
+            <tr>
+              <td><a :href="'/clusters/' + clustername + '/brokers/' + Broker[0]">{{ Broker[0]
+                }}</a></td>
+              <td>{{ Broker[1] }}</td>
+              <td>{{ Broker[2] }}</td>
+              <td>{{ Broker[3] }}</td>
+              <td>{{ Broker[4] }}</td>
+              <td>{{ Broker[5] }}</td>
+            </tr>
+          </template>
+
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="col-md-5 un-pad-me">
+      <div class="panel panel-default">
+        <div class="panel-heading"><h3>Combined Metrics</h3></div>
+
+        <table class="table">
+          <thead>
+          <tr>
+            <th>Rate/sec</th>
+            <th>Mean</th>
+            <th>1&nbsp;min</th>
+            <th>5&nbsp;min</th>
+            <th>15&nbsp;min</th>
+          </tr>
+          </thead>
+
+          <tbody>
+          <template v-for="Metric in addedcombinedMetrics">
+            <tr>
+              <td>{{ Metric[4] }}</td>
+              <td>
+                <span class="badge">{{ calculate(Metric[0]) }}</span>
+              </td>
+              <td>
+                <span class="badge">{{ calculate(Metric[1]) }}</span>
+              </td>
+              <td>
+                <span class="badge">{{ calculate(Metric[2]) }}</span>
+              </td>
+              <td>
+                <span class="badge">{{ calculate(Metric[3]) }}</span>
+              </td>
+            </tr>
+          </template>
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4>Broker 上 Topic 信息</h4>
+        <div id="container2" style="min-height:500px"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  function goBack() {
+    window.history.back()
+  }
+  function checkBoxSelect(idPrefix, booleanValue, display) {
+    $("[id^=" + idPrefix + "]").prop("checked", booleanValue);
+  }
+
+  function selectBySubname(selectId, selectClass, display) {
+    var subname = $(selectId).val().toLowerCase();
+    $('.' + selectClass).not("[name*='" + subname + "']").css("display", "none");
+    $("[class='" + selectClass + "'][name*='" + subname + "']").css("display", display);
+    if (subname == "") {
+      $('.' + selectClass).css("display", display);
+    }
+  }
+
+  function disableSubmission() {
+    $('[type=submit]').prop('disabled', true);
+    $('[type=submit]').removeAttr('type');
+  }
+</script>
+<script>
+  $.ajax({
+    url: "/get_Brokers",
+    success: function (data) {
+      new Vue({
+        el: '#vueTemp',
+        data: {
+          clustername: data.clustername,
+          combinedMetrics: data.combinedMetrics,
+          BrokerList: data.BrokerList
+        },
+        computed: {
+          addedcombinedMetrics(){
+            var Ratetitle = ["Messages in", "Bytes in", "Bytes out", "Bytes rejected", "Failed fetch r equest", "Failed produce request"];
+            for (var i = 0; i < this.combinedMetrics.length; i++) {
+              this.combinedMetrics[i][4] = Ratetitle[i];
+            }
+            return this.combinedMetrics;
+          }
+        },
+        methods: {
+          calculate(value){
+            var result = ''
+            if (value < 1000) {
+              result = value.toFixed(2)
+            }
+            if (value >= 1000) {
+              result = (value / 1000).toFixed(1) + 'k'
+            }
+            return result;
+          }
+        }
+      });
+    },
+    error: function (error) {
+    }
+  });
+  $.ajax({
+    url: "/get_BrokersChart",
+    success: function (data) {
+      $(function () {
+        $('#container2').highcharts({
+          chart: {
+            type: 'bubble',
+            zoomType: 'xy'
+          },
+          title: {
+            text: 'Broker 上 Topic 图'
+          },
+          xAxis: {
+            min:0.5,
+            title: {
+              text: 'Broker'
+            },
+            labels: {
+              formatter: function () {
+                return '<a href="' + 'http://127.0.0.1:3000/clusters/' + data.clustername + '/brokers/' + this.value + '">' +
+                  this.value + '</a>';
+              }
+            },
+//            gridLineWidth: 130,
+            allowDecimals: false,
+          },
+          yAxis: {
+            title: {
+              text: null
+            },
+            labels: {
+              enabled: false
+            },
+            allowDecimals: false,
+          },
+          legend: {
+            layout: 'vertical',
+            align: 'right',
+            verticalAlign: 'top',
+            y: 30,
+            maxHeight: 150,
+            navigation: {
+              activeColor: 'red',
+              animation: true,
+              arrowSize: 15,
+              inactiveColor: '#CCC',
+              style: {
+                fontWeight: 'bold',
+                color: '#333',
+                fontSize: '12px'
+              }
+            }
+          },
+          tooltip: {
+            headerFormat: '<b>{series.name}</b><br>',
+            pointFormat: 'broker{point.x:.0f} 上的 partition数目{point.z} '
+          },
+          series: data.chart1
+        });
+      });
+
+    },
+    error: function (XMLHttpRequest, textStatus) {
+      alert(XMLHttpRequest.status);
+      alert(XMLHttpRequest.readyState);
+      alert(textStatus);
+    }
+  });
+</script>
+
+</body>
+</html>
+
