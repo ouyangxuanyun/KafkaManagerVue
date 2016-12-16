@@ -13,13 +13,15 @@ var BrokerList = [];
  */
 function getBrokerList(callback) {
   client.getChildren("/brokers/ids", function (error, children, stats) {
+    console.log("/brokers/ids/brokers/ids/brokers/ids/brokers/ids")
     BrokerList = [];
     if (error) {
       return callback(new Error(error.stack));
-    }//console.log('Children are: %j.', children);console.log(children.length);console.log("Function getBrokerList");console.log(children[1])
+    }//console.log('Children are: %j.', children);
     var brokernum = children.length, flag = 0;
-
-    console.log("zoooooookeeper id number : ");console.log(brokernum)
+    if (brokernum == 0) {
+      return callback(null, BrokerList);
+    }
     for (var brokerid = 0; brokerid < brokernum; brokerid++) {
       !function (brokerid) {
         getbrokerinfo(children[brokerid], function (data) {//console.log(data);
@@ -38,6 +40,7 @@ function getBrokerList(callback) {
         })
       }(brokerid);
     }
+
   });
 }
 
@@ -75,13 +78,13 @@ function getbrokerinfo(brokerid, callback) {
     }
     if (stat) {// console.log(brokerid + ' Node exists.');
       client.getData(path,//function (event) {console.log('Got event: %s.', event);},
-          function (error, data) {
-            if (error) {
-              return console.log(error.stack);
-            } else {
-              callback(JSON.parse(data.toString('utf8'))) //data buffer -> String -> Object
-            }//console.log('Got data: %s', data.toString('utf8'));
-          }
+        function (error, data) {
+          if (error) {
+            return console.log(error.stack);
+          } else {
+            callback(JSON.parse(data.toString('utf8'))) //data buffer -> String -> Object
+          }//console.log('Got data: %s', data.toString('utf8'));
+        }
       );
     } else {//console.log('Node does not exist.');
       callback(0);
@@ -131,7 +134,7 @@ function getEachConsumeTopics(consumergp, callback) {
           return console.log("err2" + error.stack);
         }
         consumtopics = children;
-        callback(consumtopics);
+        return callback(consumtopics);
       });
     } else {
       client.exists(ownerspath, function (error, stat) {
@@ -144,7 +147,7 @@ function getEachConsumeTopics(consumergp, callback) {
               return console.log("err4" + error.stack);
             }
             consumtopics = children;
-            callback(consumtopics);
+            return callback(consumtopics);
           });
         } else {
           consumtopics = [];
@@ -174,7 +177,7 @@ function getAllConsumeInfo(callback) {
           entryInfo[2] = consumtopics;
           allconsumersInfo.push(entryInfo);
           if (num++ == consumers.length) {
-            callback(allconsumersInfo);
+            return callback(allconsumersInfo);
           }
         });
       }(i);
@@ -214,7 +217,7 @@ function getConsumerOffset(consumergp, topic, callback) {
         }
       });
     } else {
-      callback(null,Parti_ConsumOff)
+      callback(null, Parti_ConsumOff)
     }
   });
 }
@@ -223,13 +226,13 @@ function getConsumerOffset(consumergp, topic, callback) {
 function getPartiOffset(consumergp, topic, partition, callback) {
   var path = "/consumers/" + consumergp + "/offsets/" + topic + "/" + partition;
   client.getData(path,//function (event) {console.log('Got event: %s.', event);},
-      function (error, data) {
-        if (error) {
-          return console.log(error.stack);
-        } else {
-          callback(data.toString('utf8')) //data buffer -> String
-        }//console.log('Got data: %s', data.toString('utf8'));
-      }
+    function (error, data) {
+      if (error) {
+        return console.log(error.stack);
+      } else {
+        callback(data.toString('utf8')) //data buffer -> String
+      }//console.log('Got data: %s', data.toString('utf8'));
+    }
   );
 }
 
@@ -237,13 +240,13 @@ function getPartiOffset(consumergp, topic, partition, callback) {
 function getPartiOwner(consumergp, topic, partition, callback) {
   var path = "/consumers/" + consumergp + "/owners/" + topic + "/" + partition;
   client.getData(path,//function (event) {console.log('Got event: %s.', event);},
-      function (error, data) {
-        if (error) {
-          return console.log(error.stack);
-        } else {
-          callback(data.toString('utf8'));
-        }
+    function (error, data) {
+      if (error) {
+        return console.log(error.stack);
+      } else {
+        callback(data.toString('utf8'));
       }
+    }
   );
 }
 
@@ -268,7 +271,7 @@ function getInstanceOwner(consumergp, topic, callback) {
           console.log(error.stack);
           return callback(new Error(error.stack));
         } else {//console.log("---------------------------------getInstanceOwner run")
-          if (children.length == 0) callback(null,Parti_Owner); //有owners/topic 但是里面为空，就要返回空数组
+          if (children.length == 0) callback(null, Parti_Owner); //有owners/topic 但是里面为空，就要返回空数组
           for (var i = 0; i < children.length; i++) {
             !function (i) {
               getPartiOwner(consumergp, topic, children[i], function (data) {

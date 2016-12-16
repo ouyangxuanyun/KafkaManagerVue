@@ -66,6 +66,9 @@ function getcombinedMetrics(BrokerList, callback) {
   var result = [];
   var combinedMetric = new Array();
   var flag = 0;
+  if (BrokerList.length == 0) {
+     return callback(null, combinedMetric);
+  }
   for (var i = 0; i < BrokerList.length; i++) {
     !function (i) {
       connecthost(BrokerList[i][1], BrokerList[i][3], function (err, oneHostMetric) { // data是一个二维数组，[MessagesIn,BytesIn,BytesOut…]
@@ -742,6 +745,5 @@ jmxutil.getTopicJMXdata = getTopicJMXdata;// == add jnn ==
 jmxutil.connecthost = connecthost;
 jmxutil.getcombinedMetrics = getcombinedMetrics;
 module.exports = jmxutil;
-
 
 

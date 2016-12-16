@@ -17,12 +17,14 @@ function getPartitionOffset(topic, callback) {
     // if (error) return handleError(error);
     //console.log(offsets);//console.log(offsets[topic][partition]);
     if (error) {
-      return callback(new Error(error.stack))
+      console.log(error);
+      return callback("fetchLatestOffsets Fails" + new Error(error))
     }
     console.log("Running:   getPartitionOffset")
     var result = [];
     var i = 0;
     while (offsets[topic][i] != undefined) {
+      console.log("-----------get offset of Paririon:--------------" + i)
       result[i] = offsets[topic][i];
       i++;
     }//console.log("---------------------getPartitionOffset run")
