@@ -16,14 +16,13 @@ AllCluster['test111'] = testInfo(); //console.log(AllCluster["test111"])
 
 var BrokerList = ''; //全局，提供给topic list页面 和 brokers页面
 var BrokerList_Topic = [];//给topic页面连接信息
+var BrokerNumber = 4;
 
-/* 获取Broker的IP 端口等信息*/
 
-
-/*显示clusters list 信息， homepage页*/
+/*获取Broker的IP 端口等信息, 显示clusters list 信息， homepage页*/
 router.get('/', function (req, res) {
-  BrokerList = ''; //
-  BrokerList_Topic = [];//
+  BrokerList = '';
+  BrokerList_Topic = [];
   zkutil.getBrokerList(function (err, _BrokerList) {
     if (err) {
       console.log("Error");
@@ -414,7 +413,7 @@ router.get('/get_Brokers', function (req, res, next) {
       })
     });
   });
-})
+});
 
 
 router.get('/get_BrokersChart', function (req, res, next) {
@@ -422,6 +421,7 @@ router.get('/get_BrokersChart', function (req, res, next) {
     kafka.getBrotoPartiPerTopic(BrokerList,topiclist, function (err, data) {
       //console.log("-----------------------" + data[0].partition[0]);
       var series1 = [];
+      var categories = [];
       for (var i = 0; i < data.length; i++) {//按照topic循环
         !function (i) {
           var topicdataarr = new Object();
@@ -430,15 +430,19 @@ router.get('/get_BrokersChart', function (req, res, next) {
           for (var id = 0; id < BrokerList.length; id++) {
             var dataarr = [];
             dataarr.push(Number(BrokerList[id][0]) + (Math.random()-0.5)/2);
+            // dataarr.push(id  + (Math.random()-0.5)/2);
+            categories.push('Broker: ' + BrokerList[id][0]);
             dataarr.push(Math.round(400 * Math.random()));
             dataarr.push(data[i].partitionLen[BrokerList[id][0]]);
             topicdataarr.data.push(dataarr)
           }
-
           series1.push(topicdataarr);
         }(i)
       }
-      res.send({chart1 :series1,clustername: temp_clustername})
+      // for (var id = 0; id < BrokerList.length; id++) {
+      //   categories.push(Number(BrokerList[id][0]));
+      // }
+      res.send({chart1 :series1,clustername: temp_clustername,categories:categories,broker_num:BrokerNumber})
     })
   })
 });
@@ -522,12 +526,12 @@ router.get('/get_ConsumTopicInfo', function (req, res) {
   var allInfo = [];
   nodeutils.getPartitionOffset(temp_consumerTopic, function (err, Partition_LogSize) {
     if (err) {
-      return console.log(new Error(err))
+      return console.log("getPartitionOffset" + new Error(err))
     }
     // console.log("############  Partition_LogSize   " + Partition_LogSize);
     zkutil.getConsumerOffset(temp_consumergp, temp_consumerTopic, function (err, ConsumerOffset) {
       if (err) {
-        return console.log(new Error(err))
+        return console.log("getConsumerOffset" + new Error(err))
       }
       // console.log("############  ConsumerOffset   " + ConsumerOffset);
       zkutil.getInstanceOwner(temp_consumergp, temp_consumerTopic, function (err, InstanceOwner) {

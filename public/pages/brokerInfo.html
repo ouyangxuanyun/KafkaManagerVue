@@ -96,15 +96,18 @@
                                 </tr>
                                 <tr>
                                     <td>% of Messages</td>
-                                    <td>{{ (100 * brokerMetric[0][0] / InOutMessage[0][0]).toFixed(2) }} %</td>
+                                    <td v-if="InOutMessage[0][0] == 0">0.00 %</td>
+                                    <td v-else>{{ (100 * brokerMetric[0][0] / InOutMessage[0][0]).toFixed(2) }} %</td>
                                 </tr>
                                 <tr>
                                     <td>% of Incoming</td>
-                                    <td>{{ (100 * brokerMetric[1][0] / InOutMessage[1][0]).toFixed(2) }} %</td>
+                                  <td v-if="InOutMessage[0][0] == 0">0.00 %</td>
+                                  <td v-else>{{ (100 * brokerMetric[1][0] / InOutMessage[1][0]).toFixed(2) }} %</td>
                                 </tr>
                                 <tr>
                                     <td>% of Outgoing</td>
-                                    <td>{{ (100 * brokerMetric[2][0] / InOutMessage[2][0]).toFixed(2) }} %</td>
+                                  <td v-if="InOutMessage[0][0] == 0">0.00 %</td>
+                                  <td v-else>{{ (100 * brokerMetric[2][0] / InOutMessage[2][0]).toFixed(2) }} %</td>
                                 </tr>
                                 </tbody>
                             </table>

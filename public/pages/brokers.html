@@ -219,6 +219,7 @@
     error: function (error) {
     }
   });
+
   $.ajax({
     url: "/get_BrokersChart",
     success: function (data) {
@@ -232,7 +233,8 @@
             text: 'Broker 上 Topic 图'
           },
           xAxis: {
-            min:0.5,
+            showEmpty: false,
+//            categories: data.categories,
             title: {
               text: 'Broker'
             },
@@ -242,7 +244,10 @@
                   this.value + '</a>';
               }
             },
-//            gridLineWidth: 130,
+
+            gridLineWidth: 130,
+            minRange:data.broker_num,
+            min:0.5,
             allowDecimals: false,
           },
           yAxis: {
@@ -276,6 +281,13 @@
             headerFormat: '<b>{series.name}</b><br>',
             pointFormat: 'broker{point.x:.0f} 上的 partition数目{point.z} '
           },
+
+//          tooltip: {
+//            formatter: function () {
+//              return data.categories[Math.round(this.x)] +
+//                '</b> partition numbers: <b>' + this.z + '</b>';
+//            }
+//          },
           series: data.chart1
         });
       });
