@@ -14,14 +14,13 @@ var nodeutils = new Object();
 function getPartitionOffset(topic, callback) {
   console.log("topic:" + topic)
   offset.fetchLatestOffsets([topic], function (error, offsets) {
-    // if (error) return handleError(error);
-    //console.log(offsets);//console.log(offsets[topic][partition]);
+    console.log("Running:   getPartitionOffset")
+    var result = [];
+    if (!offsets)     callback(null, result)
     if (error) {
       console.log(error);
       return callback("fetchLatestOffsets Fails" + new Error(error))
     }
-    console.log("Running:   getPartitionOffset")
-    var result = [];
     var i = 0;
     while (offsets[topic][i] != undefined) {
       console.log("-----------get offset of Paririon:--------------" + i)
@@ -49,6 +48,7 @@ function createTopic(topicname, callback) {
     }
   });
 }
+
 
 nodeutils.getPartitionOffset = getPartitionOffset;
 nodeutils.createTopic = createTopic;

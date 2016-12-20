@@ -167,6 +167,7 @@ function getTopicList(callback) {
       kafka.brokers.list(function (err, b_data) {
         if (err) {
           console.log('Failed to get brokers list :' + err);
+          callback(new Error(err.stack));
         }
         else {
           brokers = b_data.length;
@@ -183,6 +184,7 @@ function getTopicList(callback) {
     }
   });
 }
+
 
 /* GET topic detail. */
 function getTopicSummary(topic, callback) {
@@ -210,7 +212,7 @@ function getTopicSummary(topic, callback) {
         var partitions = t_data.raw.partitions.length; //number of partitions
         var p_r_num = 0;//number of preferred replicas
         var b_arry = new Array();
-        b_arry[0] = t_data.raw.partitions[0].replicas[0].broker;
+        //b_arry[0] = t_data.raw.partitions[0].replicas[0].broker;
         var t_brokers = 1;//number of brokers for topic
         for (var m = 0; m < t_data.raw.partitions.length; m++) {
           if (t_data.raw.partitions[m].replicas[0].leader) {
@@ -225,7 +227,7 @@ function getTopicSummary(topic, callback) {
                 break;
               }
             }
-            if (flag == false) {
+            if ((flag == false)&&(t_data.raw.partitions[m].replicas[n].in_sync)) {
               b_arry.push(t_data.raw.partitions[m].replicas[n].broker);
               //console.log(b_arry);
 
@@ -273,7 +275,8 @@ function getTopicSummary(topic, callback) {
             }
           }
         }
-        var t_brokers = broker_partition_list.length;//number of brokers for topic
+        //var t_brokers = broker_partition_list.length;//number of brokers for topic
+        var t_brokers = broker_list.length;//mod jnn 12-19
 
         var partitions_list = new Array();
 
@@ -288,9 +291,12 @@ function getTopicSummary(topic, callback) {
             }
             if (j != 0) {
               r_list += ',';
-              isr += ',';
+              //isr += ',';
             }
-            if (t_data.raw.partitions[i].replicas[j].in_sync) isr += t_data.raw.partitions[i].replicas[j].broker;
+            if (t_data.raw.partitions[i].replicas[j].in_sync) {
+              if(isr!='(') isr+=',';//add jnn 12-19
+              isr += t_data.raw.partitions[i].replicas[j].broker;
+            }
             r_list += t_data.raw.partitions[i].replicas[j].broker;
             if (j == t_data.raw.partitions[i].replicas.length - 1) {
               r_list += ')';
@@ -314,7 +320,8 @@ function getTopicSummary(topic, callback) {
         topicDetail.t_brokers = t_brokers; //number of brokers for topic
         topicDetail.brokers = brokers; //number of brokers for cluster
         //topicDetail.b_p_list = b_p_list;//broker list for topic
-        topicDetail.broker_list = broker_partition_list;//broker list for topic, list is a string
+        //topicDetail.broker_list = broker_partition_list;//broker list for topic, list is a string
+        topicDetail.broker_list = broker_list;//broker list for topic, list is a string //mod jnn 12-19
         topicDetail.prefferedReplicas = Math.floor(p_r_num * 100 / partitions);//preferred replicas %//mod jnn
         topicDetail.brokerSpread = Math.floor(t_brokers * 100 / brokers); //broker spread %//mod jnn
         topicDetail.brokerSkewed = brokerSkewed;//broker skewed %
@@ -325,6 +332,7 @@ function getTopicSummary(topic, callback) {
       }
     });
   });
+
 }
 
 

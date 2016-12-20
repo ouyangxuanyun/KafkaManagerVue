@@ -31,6 +31,8 @@ process.on('uncaughtException', function (err) {
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
+// app.set('env', 'production');
+app.set('env', 'development');
 
 // uncomment after placing your favicon in /public
 app.use(logger('dev'));
@@ -54,13 +56,14 @@ app.use(function (req, res, next) {
 // development error handler
 // will print stacktrace
 if (app.get('env') === 'development') {
+  console.log('Running in development mode');
   app.use(function (err, req, res, next) {
     res.status(err.status || 500);
     console.log("-----------------   ERROR(development)  -------------------")
-    res.render('error', {
-      message: err.message,
-      error: err
-    });
+    // res.render('error', {
+    //   message: err.message,
+    //   error: err
+    // });
   });
 }
 
@@ -69,10 +72,10 @@ if (app.get('env') === 'development') {
 app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   console.log("-----------------   ERROR(production)  -------------------")
-  res.render('error', {
-    message: err.message,
-    error: {}
-  });
+  // res.render('error', {
+  //   message: err.message,
+  //   error: {}
+  // });
 });
 
 

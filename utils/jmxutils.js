@@ -27,10 +27,11 @@ function connecthost(host, port, callback) {
           if (err) {
             return callback(new Error(err.stack))
           }
-          // console.log("MessagesInPerSec" + data)
           Metrics[i] = data; //MessagesIn
           flag++;
-          if (flag === 6) callback(null, Metrics)
+          if (flag === 6) {
+            callback(null, Metrics)
+          }
         });
       }(i);
     }
@@ -49,7 +50,6 @@ function getmetricrow(client, MBeanname, callback) {
   for (var i = 0; i < 4; i++) {
     !function (i) {
       client.getAttribute(MBeanname, Items[i], function (data) {
-        // console.log(data.toString());
         result[i] = data;
         flag++;// console.log(flag)
         if (flag == 4) callback(null, result);
@@ -67,7 +67,7 @@ function getcombinedMetrics(BrokerList, callback) {
   var combinedMetric = new Array();
   var flag = 0;
   if (BrokerList.length == 0) {
-     return callback(null, combinedMetric);
+    return callback(null, combinedMetric);
   }
   for (var i = 0; i < BrokerList.length; i++) {
     !function (i) {
@@ -97,6 +97,33 @@ function getcombinedMetrics(BrokerList, callback) {
 }
 
 
+function getCPUMetric(host, port, callback) {
+  var prosysCPU = [];
+  var client = jmx.createClient({
+    host: host,
+    port: port
+  });
+  client.connect();
+  client.on("connect", function () {
+    client.getAttribute("java.lang:type=OperatingSystem", "ProcessCpuLoad", function (ProcessCpuLoad) {
+      if (!ProcessCpuLoad)         return callback(null, prosysCPU);
+      client.getAttribute("java.lang:type=OperatingSystem", "SystemCpuLoad", function (SystemCpuLoad) {
+        if (!SystemCpuLoad)         return callback(null, prosysCPU);
+        prosysCPU.push(ProcessCpuLoad);
+        prosysCPU.push(SystemCpuLoad);
+        return callback(null, prosysCPU);
+      });
+    });
+  })
+
+}
+
+
+// getCPUMetric('VM-02', 9998, function (data) {
+//   console.log(data)
+// })
+
+
 /** == add jnn ==
  * @param cluster_arr (集群broker信息的二维数组)
  * @param brokers
@@ -105,17 +132,17 @@ function getcombinedMetrics(BrokerList, callback) {
  */
 function getMBeanList(cluster_arr, brokers, callback) {
   var mbean_list = new Array(),
-      broker_arr = new Array()
+    broker_arr = new Array()
   for (var i = 0; i < brokers; i++) {
     broker_arr.push(i);
   }
   async.each(broker_arr, function (broker_item, callback) {
     var host = cluster_arr[broker_item][1],
-        port = cluster_arr[broker_item][2],
-        client = jmx.createClient({
-          host: host,
-          port: port
-        })
+      port = cluster_arr[broker_item][2],
+      client = jmx.createClient({
+        host: host,
+        port: port
+      })
     client.connect();
     client.on("connect", function () {
       //console.log("connect successful !");
@@ -124,14 +151,14 @@ function getMBeanList(cluster_arr, brokers, callback) {
         //得到单个broker （broker_item）上所有 Mbean 数组（data[]）
         async.each(data, function (mbean_item, callback) {
           var splitstr1 = mbean_item.split(/:/),
-              splitstr2 = splitstr1[1].split(/,/)
+            splitstr2 = splitstr1[1].split(/,/)
           if ((splitstr1[0] === 'kafka.cluster') || (splitstr1[0] === 'kafka.log' && splitstr2[3] === 'type=Log')) {
             var splitname = splitstr2[0].split(/=/),
-                splittopic = splitstr2[2].split(/=/),
-                splitparti = splitstr2[1].split(/=/),
-                name = splitname[1],
-                topic = splittopic[1],
-                partition = splitparti[1]
+              splittopic = splitstr2[2].split(/=/),
+              splitparti = splitstr2[1].split(/=/),
+              name = splitname[1],
+              topic = splittopic[1],
+              partition = splitparti[1]
             client.getAttribute(mbean_item, 'Value', function (data) {
               //console.log(mbean_item)
               mbean_list.push({
@@ -148,10 +175,10 @@ function getMBeanList(cluster_arr, brokers, callback) {
           }
           else if (splitstr1[0] === 'kafka.server' && splitstr2[2] === 'type=BrokerTopicMetrics') {
             var splitname = splitstr2[0].split(/=/),
-                splittopic = splitstr2[1].split(/=/),
-                name = splitname[1],
-                topic = splittopic[1],
-                attribute_arr = ['FifteenMinuteRate', 'FiveMinuteRate', 'MeanRate', 'OneMinuteRate']
+              splittopic = splitstr2[1].split(/=/),
+              name = splitname[1],
+              topic = splittopic[1],
+              attribute_arr = ['FifteenMinuteRate', 'FiveMinuteRate', 'MeanRate', 'OneMinuteRate']
             async.each(attribute_arr, function (attribute_item, callback) {
               client.getAttribute(mbean_item, attribute_item, function (data) {
                 mbean_list.push({
@@ -172,13 +199,13 @@ function getMBeanList(cluster_arr, brokers, callback) {
           }
           else if (splitstr1[0] === 'kafka.server' && splitstr2[4] === 'type=FetcherLagMetrics') {
             var splitname = splitstr2[1].split(/=/),
-                splitclientid = splitstr2[0].split(/=/),
-                splittopic = splitstr2[3].split(/=/),
-                splitparti = splitstr2[2].split(/=/),
-                name = splitname[1],
-                clientid = splitclientid[1],
-                topic = splittopic[1],
-                partition = splitparti[1]
+              splitclientid = splitstr2[0].split(/=/),
+              splittopic = splitstr2[3].split(/=/),
+              splitparti = splitstr2[2].split(/=/),
+              name = splitname[1],
+              clientid = splitclientid[1],
+              topic = splittopic[1],
+              partition = splitparti[1]
             client.getAttribute(mbean_item, 'Value', function (data) {
               mbean_list.push({
                 broker: broker_item,
@@ -230,18 +257,18 @@ function getJMXdata(cluster_arr, brokers, topic_arr, callback) {
     }
     async.each(topic_arr, function (topic, callback) {
       var start_offset = 0,
-          end_offset = 0,
-          metrics = new Object(),
-          BytesInPerSec = [0, 0, 0, 0],
-          BytesOutPerSec = [0, 0, 0, 0],
-          BytesRejectedPerSec = [0, 0, 0, 0],
-          FailedFetchRequestsPerSec = [0, 0, 0, 0],
-          FailedProduceRequestsPerSec = [0, 0, 0, 0],
-          MessagesInPerSec = [0, 0, 0, 0],
-          logStartPartition_arr = new Array(),
-          logEndPartition_arr = new Array(),
-          underReplicated_arr = new Array(),//++ jnn
-          u_r_pnum = 0 //++ jnn
+        end_offset = 0,
+        metrics = new Object(),
+        BytesInPerSec = [0, 0, 0, 0],
+        BytesOutPerSec = [0, 0, 0, 0],
+        BytesRejectedPerSec = [0, 0, 0, 0],
+        FailedFetchRequestsPerSec = [0, 0, 0, 0],
+        FailedProduceRequestsPerSec = [0, 0, 0, 0],
+        MessagesInPerSec = [0, 0, 0, 0],
+        logStartPartition_arr = new Array(),
+        logEndPartition_arr = new Array(),
+        underReplicated_arr = new Array(),//++ jnn
+        u_r_pnum = 0 //++ jnn
       async.each(mb_data, function (mb_item, callback) {
         if (mb_item.topic == topic) {
           if (mb_item.name == 'UnderReplicated') {
@@ -472,18 +499,18 @@ function getJMXdata(cluster_arr, brokers, topic_arr, callback) {
  */
 function getTopicJMXdata(cluster_arr, brokers, topic, callback) {
   var start_offset = 0,
-      end_offset = 0,
-      metrics = new Object(),
-      BytesInPerSec = [0, 0, 0, 0],
-      BytesOutPerSec = [0, 0, 0, 0],
-      BytesRejectedPerSec = [0, 0, 0, 0],
-      FailedFetchRequestsPerSec = [0, 0, 0, 0],
-      FailedProduceRequestsPerSec = [0, 0, 0, 0],
-      MessagesInPerSec = [0, 0, 0, 0],
-      logStartPartition_arr = new Array(),
-      logEndPartition_arr = new Array(),
-      underReplicated_arr = new Array(),
-      u_r_pnum = 0
+    end_offset = 0,
+    metrics = new Object(),
+    BytesInPerSec = [0, 0, 0, 0],
+    BytesOutPerSec = [0, 0, 0, 0],
+    BytesRejectedPerSec = [0, 0, 0, 0],
+    FailedFetchRequestsPerSec = [0, 0, 0, 0],
+    FailedProduceRequestsPerSec = [0, 0, 0, 0],
+    MessagesInPerSec = [0, 0, 0, 0],
+    logStartPartition_arr = new Array(),
+    logEndPartition_arr = new Array(),
+    underReplicated_arr = new Array(),
+    u_r_pnum = 0
 
   getMBeanList(cluster_arr, brokers, function (err, mb_data) {
     if (err) {
@@ -694,8 +721,8 @@ function getTopicJMXdata(cluster_arr, brokers, topic, callback) {
       }
       //add 12-08
       var BytesInPerSec_str = ['', '', '', ''],
-          BytesOutPerSec_str = ['', '', '', ''],
-          BytesRejectedPerSec_str = ['', '', '', ''];
+        BytesOutPerSec_str = ['', '', '', ''],
+        BytesRejectedPerSec_str = ['', '', '', ''];
       for (var i = 0; i < 4; i++) {
         !function (i) {
           if (BytesInPerSec[i] < 100) {
@@ -744,6 +771,7 @@ jmxutil.getJMXdata = getJMXdata;// == add jnn ==
 jmxutil.getTopicJMXdata = getTopicJMXdata;// == add jnn ==
 jmxutil.connecthost = connecthost;
 jmxutil.getcombinedMetrics = getcombinedMetrics;
+jmxutil.getCPUMetric = getCPUMetric;
 module.exports = jmxutil;
 
 

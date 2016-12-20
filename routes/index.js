@@ -17,7 +17,16 @@ AllCluster['test111'] = testInfo(); //console.log(AllCluster["test111"])
 var BrokerList = ''; //全局，提供给topic list页面 和 brokers页面
 var BrokerList_Topic = [];//给topic页面连接信息
 var BrokerNumber = 4;
+var OriginBrokerList = [];
 
+zkutil.getBrokerList(function (err, _BrokerList) {
+  if (err) {
+    console.log("get Original BrokerList Error");
+    return console.log(new Error(err));
+  } else {
+    OriginBrokerList = _BrokerList;
+  }
+});
 
 /*获取Broker的IP 端口等信息, 显示clusters list 信息， homepage页*/
 router.get('/', function (req, res) {
@@ -25,7 +34,7 @@ router.get('/', function (req, res) {
   BrokerList_Topic = [];
   zkutil.getBrokerList(function (err, _BrokerList) {
     if (err) {
-      console.log("Error");
+      console.log(" getBrokerList Error");
       return console.log(new Error(err));
     } else {
       BrokerList = _BrokerList;
@@ -174,7 +183,6 @@ router.get('/get_updateCluster', function (req, res, next) {
 
 
 /* Clusters 页面增删改  Modify/Disable/Enable/Delete,　update页面save按钮 或者Cluster页面Disable，Enable，Delete按钮*/
-
 router.post('/clusters/:clustername', function (req, res, next) {
   var clustername = req.body.name;
   var checkedkey = ["logkafkaEnabled", "pollConsumers", "filterConsumers", "activeOffsetCacheEnabled", "displaySizeEnabled"];
@@ -406,10 +414,28 @@ router.get('/get_Brokers', function (req, res, next) {
       if (err) {
         return console.log(new Error(err));
       }
+
+      var aliveBrokerIds = [];
+      var OriginBrokerIds = [];
+      for (var j = 0; j < BrokerList.length; j++) {
+        aliveBrokerIds.push(Number(BrokerList[j][0]));
+      }
+      for (var i = 0; i < OriginBrokerList.length; i++) {
+        OriginBrokerIds.push(OriginBrokerList[i][0]);
+      }
+      for (var k = 0; k < BrokerList.length; k++) {
+        if (OriginBrokerIds.indexOf(BrokerList[k][0]) == -1) {
+          OriginBrokerList.push(BrokerList[k]);
+        }
+      }
+
+      OriginBrokerList.sort(compare(0));
       res.send({
         clustername: temp_clustername,
         combinedMetrics: combinedMetrics,
-        BrokerList: BrokerList
+        BrokerList: BrokerList,
+        OriginBrokerList: OriginBrokerList,
+        aliveBrokerIds: aliveBrokerIds
       })
     });
   });
@@ -418,18 +444,17 @@ router.get('/get_Brokers', function (req, res, next) {
 
 router.get('/get_BrokersChart', function (req, res, next) {
   kafka.listTopics(function (topiclist) {
-    kafka.getBrotoPartiPerTopic(BrokerList,topiclist, function (err, data) {
-      //console.log("-----------------------" + data[0].partition[0]);
+    kafka.getBrotoPartiPerTopic(BrokerList, topiclist, function (err, data) {
       var series1 = [];
       var categories = [];
       for (var i = 0; i < data.length; i++) {//按照topic循环
         !function (i) {
           var topicdataarr = new Object();
-          topicdataarr.data =[];
+          topicdataarr.data = [];
           topicdataarr.name = data[i].name;
           for (var id = 0; id < BrokerList.length; id++) {
             var dataarr = [];
-            dataarr.push(Number(BrokerList[id][0]) + (Math.random()-0.5)/2);
+            dataarr.push(Number(BrokerList[id][0]) + (Math.random() - 0.5) / 2);
             // dataarr.push(id  + (Math.random()-0.5)/2);
             categories.push('Broker: ' + BrokerList[id][0]);
             dataarr.push(Math.round(400 * Math.random()));
@@ -439,10 +464,7 @@ router.get('/get_BrokersChart', function (req, res, next) {
           series1.push(topicdataarr);
         }(i)
       }
-      // for (var id = 0; id < BrokerList.length; id++) {
-      //   categories.push(Number(BrokerList[id][0]));
-      // }
-      res.send({chart1 :series1,clustername: temp_clustername,categories:categories,broker_num:BrokerNumber})
+      res.send({chart1: series1, clustername: temp_clustername, categories: categories, broker_num: BrokerNumber})
     })
   })
 });
@@ -460,7 +482,6 @@ router.get('/get_BrokerDetail', function (req, res, next) {
   var broid = Info[0];
   var host = Info[1];
   var port = Info[2];
-  // console.log("HHHHHHHHH");console.log(broid);console.log(host);console.log(port);
   async.parallel([
       function (cb) {
         jmxutil.getcombinedMetrics(BrokerList, cb) //calback(combinedMetrics)
@@ -472,18 +493,22 @@ router.get('/get_BrokerDetail', function (req, res, next) {
         kafka.listTopics(function (allist) {
           kafka.listTopicPartitions(broid, allist, cb)// callback(topiclistdetail)
         })
+      },
+      function (cb) {
+        jmxutil.getCPUMetric(host, port, cb);// callback(prosysCPU)
       }
     ],
     function (err, results) {
       if (err) {
-        return console.log(new Error(err));
+        return console.log('async error' + err);
       }
       res.send({
         clustername: temp_clustername,
         brokerlistId: broid,
+        InOutMessage: results[0],
         brokerMetric: results[1],
         topiclistdetail: results[2],
-        InOutMessage: results[0],
+        prosysCPU: [Number(results[3][0].toFixed(2)), Number(results[3][1].toFixed(2))]
       })
     });
 })
@@ -528,17 +553,14 @@ router.get('/get_ConsumTopicInfo', function (req, res) {
     if (err) {
       return console.log("getPartitionOffset" + new Error(err))
     }
-    // console.log("############  Partition_LogSize   " + Partition_LogSize);
     zkutil.getConsumerOffset(temp_consumergp, temp_consumerTopic, function (err, ConsumerOffset) {
       if (err) {
         return console.log("getConsumerOffset" + new Error(err))
       }
-      // console.log("############  ConsumerOffset   " + ConsumerOffset);
       zkutil.getInstanceOwner(temp_consumergp, temp_consumerTopic, function (err, InstanceOwner) {
         if (err) {
           return console.log(new Error(err))
         }
-        // console.log("############  InstanceOwner   " + InstanceOwner);
         var instancenum = 0;
         var totalLag = 0;
         for (var i = 0; i < Partition_LogSize.length; i++) { //i代表partition
@@ -585,7 +607,6 @@ router.get('/get_ConsumTopicInfo', function (req, res) {
   });
 });
 
-
 function findBrokerInfo(brokerlistId) {
   for (var i = 0; i < BrokerList_Topic.length; i++) {
     if (BrokerList_Topic[i] != null && BrokerList_Topic[i] != undefined) {
@@ -596,4 +617,12 @@ function findBrokerInfo(brokerlistId) {
   }
   return undefined;
 }
+function compare(property) {
+  return function (a, b) {
+    var value1 = a[property];
+    var value2 = b[property];
+    return value1 - value2;
+  }
+}
+
 module.exports = router;
