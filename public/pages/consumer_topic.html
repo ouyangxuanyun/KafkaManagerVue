@@ -14,9 +14,8 @@
   <script src="/dataTables/javascripts/dataTables.bootstrap.js"></script>
   <script src="/javascripts/vue.js"></script>
 
-  <script type="text/javascript" src="http://cdn.hcharts.cn/highcharts/highcharts.js"></script>
-  <script type="text/javascript" src="http://cdn.hcharts.cn/highcharts/modules/exporting.js"></script>
-  <script type="text/javascript" src="http://cdn.hcharts.cn/highcharts/highcharts-more.js"></script>
+  <script src="/highcharts/highcharts.js"></script>
+  <script src="/highcharts/highcharts-more.js"></script>
 </head>
 <style>
   [v-cloak] {
@@ -148,10 +147,29 @@
           </div>
         </div>
 
+        <div class="row">
+          <div class="col-md-6">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4>Partition Consumed Distribution</h4>
+                <div id="container1"></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4>Partition Consumed Information</h4>
+                <div id="container2"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
     </div>
-    <div class="row">
+    <!--<div class="row">
       <div class="col-md-6">
         <div class=" panel panel-default">
           <div class="panel-heading">
@@ -172,7 +190,7 @@
 
 
 
-    </div>
+    </div>-->
 
 
     </div>
@@ -234,10 +252,10 @@
             plotShadow: false
           },
           title: {
-            text: '消费的 Partition 分布比例'
+            text: null,//'消费的 Partition 分布比例'
           },
           tooltip: {
-            pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+            pointFormat: '{series.name} <b>{point.percentage:.1f}%</b>'
           },
           plotOptions: {
             pie: {
@@ -256,7 +274,7 @@
           },
           series: [{
             type: 'pie',
-            name: '此Partition消费的比例',
+            name: 'Consumed',//'此Partition消费的比例',
             data: data.chart1
           }]
         });
@@ -269,7 +287,7 @@
           },
 
           title: {
-            text: 'Partition 上消费信息'
+            text: null,//'Partition 上消费信息'
           },
 
           xAxis: {
@@ -298,7 +316,7 @@
             enabled: false
           },
           series: [{
-            name: '消费数 - 总数',
+            name: 'Consumed - Offset',//'消费数 - 总数',
             data: data.chart2
           }]
         });

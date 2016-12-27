@@ -56,10 +56,6 @@ $().ready(function () {
         required: true,
         range: [5, 1000]
       },
-      'tuning.': {
-        required: true,
-        range: [10, 1000]
-      },
       'tuning.brokerViewThreadPoolSize': {
         required: true,
         range: [2, 1000]
@@ -105,7 +101,7 @@ $().ready(function () {
     errorElement: 'span',
     errorClass: 'help-block',
     rules: {
-      topic: 'required',
+      topic: 'required'
     }
   });
 

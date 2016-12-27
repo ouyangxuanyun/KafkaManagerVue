@@ -1,1 +1,178 @@
-.un-float-me{float:none}.un-pad-me-left{padding-left:0}.un-pad-me-right{padding-right:0}.un-pad-me{padding-left:0;padding-right:0}.ops-button{float:left;width:75px;margin-left:5px;margin-right:5px}.cancel-button{float:left;margin-left:5px;margin-right:5px}.submit-button{float:left}.glow-red{outline:none;border-color:#ffd1d1;box-shadow:0 0 10px #ffd1d1;border-style:solid}.assignment-pane{margin:0 auto}.assignment-cell{margin:1% 1% 1% 1%;border-style:solid;border-width:thin;padding:inherit;padding-top:0;border-color:#bebebe;text-align:center}.assignment-cell h4{text-align:center}.partition-cell{display:inline-block;vertical-align:top;border-style:solid;border-width:thin;border-color:#c8c8c8;padding:1% 1% 1% 1%;margin:0 0 0 0;text-align:left}.borderless{border:hidden;width:25%}.sub-heading{padding-top:0;padding-bottom:0;text-align:center}.sub-heading input{width:50%}.btn-group-vertical button .glyphicon{float:left}#selectMetrics{width:100%;margin-bottom:3%}
+.un-float-me {
+  float: none
+}
+
+.un-pad-me-left {
+  padding-left: 0
+}
+
+.un-pad-me-right {
+  padding-right: 0
+}
+
+.un-pad-me {
+  padding-left: 0;
+  padding-right: 0
+}
+
+.ops-button {
+  float: left;
+  width: 75px;
+  margin-left: 5px;
+  margin-right: 5px
+}
+
+.cancel-button {
+  float: left;
+  margin-left: 5px;
+  margin-right: 5px
+}
+
+.submit-button {
+  float: left
+}
+
+.glow-red {
+  outline: none;
+  border-color: #ffd1d1;
+  box-shadow: 0 0 10px #ffd1d1;
+  border-style: solid
+}
+
+.assignment-pane {
+  margin: 0 auto
+}
+
+.assignment-cell {
+  margin: 1% 1% 1% 1%;
+  border-style: solid;
+  border-width: thin;
+  padding: inherit;
+  padding-top: 0;
+  border-color: #bebebe;
+  text-align: center
+}
+
+.assignment-cell h4 {
+  text-align: center
+}
+
+.partition-cell {
+  display: inline-block;
+  vertical-align: top;
+  border-style: solid;
+  border-width: thin;
+  border-color: #c8c8c8;
+  padding: 1% 1% 1% 1%;
+  margin: 0 0 0 0;
+  text-align: left
+}
+
+.borderless {
+  border: hidden;
+  width: 25%
+}
+
+.sub-heading {
+  padding-top: 0;
+  padding-bottom: 0;
+  text-align: center
+}
+
+.sub-heading input {
+  width: 50%
+}
+
+.btn-group-vertical button .glyphicon {
+  float: left
+}
+
+#selectMetrics {
+  width: 100%;
+  margin-bottom: 3%
+}
+
+/*==========以下部分是Validform必须的===========*/
+.Validform_checktip {
+  margin-left: 12px;
+  line-height: 20px;
+  height: 20px;
+  overflow: hidden;
+  color: #999;
+  font-size: 12px;
+}
+
+.Validform_right {
+  color: #71b83d;
+  padding-left: 20px;
+  background: url(/images/right.png) no-repeat left center;
+}
+
+.Validform_wrong {
+  color: red;
+  padding-left: 20px;
+  white-space: nowrap;
+  background: url(/images/error.png) no-repeat left center;
+}
+
+.Validform_loading {
+  padding-left: 20px;
+  background: url(/images/onLoad.gif) no-repeat left center;
+}
+
+.Validform_error {
+  background-color: #ffe7e7;
+}
+
+#Validform_msg {
+  color: #7d8289;
+  font: 12px/1.5 tahoma, arial, \5b8b\4f53, sans-serif;
+  width: 280px;
+  -webkit-box-shadow: 2px 2px 3px #aaa;
+  -moz-box-shadow: 2px 2px 3px #aaa;
+  background: #fff;
+  position: absolute;
+  top: 0px;
+  right: 50px;
+  z-index: 99999;
+  display: none;
+  filter: progid:DXImageTransform.Microsoft.Shadow(Strength=3, Direction=135, Color='#999999');
+}
+
+#Validform_msg .iframe {
+  position: absolute;
+  left: 0px;
+  top: -1px;
+  z-index: -1;
+}
+
+#Validform_msg .Validform_title {
+  line-height: 25px;
+  height: 25px;
+  text-align: left;
+  font-weight: bold;
+  padding: 0 8px;
+  color: #fff;
+  position: relative;
+  background-color: #000;
+}
+
+#Validform_msg a.Validform_close:link, #Validform_msg a.Validform_close:visited {
+  line-height: 22px;
+  position: absolute;
+  right: 8px;
+  top: 0px;
+  color: #fff;
+  text-decoration: none;
+}
+
+#Validform_msg a.Validform_close:hover {
+  color: #cc0;
+}
+
+#Validform_msg .Validform_info {
+  padding: 8px;
+  border: 1px solid #000;
+  border-top: none;
+  text-align: left;
+}

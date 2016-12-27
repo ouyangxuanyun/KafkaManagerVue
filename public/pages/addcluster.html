@@ -4,18 +4,19 @@
     <title>Kafka Manager</title>
     <link rel="shortcut icon" type="image/png" href="/images/favicon.png">
     <link rel='stylesheet' href='/bootstrap-3.3.5/css/bootstrap.min.css'>
+
     <link rel="stylesheet" media="screen" href="/stylesheets/index.min.css">
     <link rel="stylesheet" media="screen" href="/dataTables/stylesheets/dataTables.bootstrap.css">
     <link rel="stylesheet" media="screen" href="/chartist/stylesheets/chartist.min.css">
+
     <script src="/chartist/javascripts/chartist.min.js"></script>
+
+    <script src="/jquery-2.1.4/jquery.min.js"></script>
+    <script src="/bootstrap-3.3.5/js/bootstrap.min.js"></script>
     <script src="/dataTables/javascripts/jquery.dataTables.min.js"></script>
     <script src="/dataTables/javascripts/dataTables.bootstrap.js"></script>
-    <script src="/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 
-    <script src="/jquery-validation-1.14.0/lib/jquery.js"></script>
-    <script src="/jquery-validation-1.14.0/dist/jquery.validate.min.js"></script>
-    <script src="/jquery-validation-1.14.0/dist/localization/messages_zh.js"></script>
-    <script src="/javascripts/formcheck.js"></script>
+    <script src="/Validform-v5.3.2/Validform_v5.3.2_ncr_min.js"></script>
     <script src="/javascripts/vue.js"></script>
 
 </head>
@@ -64,18 +65,30 @@
             </div>
 
             <div class="panel-body">
-                <form id="check_form" action="/clusters" class="form-vertical " role="form">
+                <form class="checkform" action="/clusters" class="form-vertical " role="form">
                     <fieldset>
                         <div class="form-group  " id="name_field">
                             <label class="control-label" for="name">Cluster Name</label>
-                            <input type="text" id="name" name="name" value="" class="form-control" placeholder=""
+                            <input type="text" id="name" name="name" value=""
+                                   datatype="cluster"
+                                   nullmsg="Please enter a cluster name with ASCII alphanumerics, '.', '_' and '-'!"
+                                   errormsg="Cluster name is illegal!"
+                                   sucmsg="OK !"
+                                   class="form-control" placeholder=""
                                    autofocus="true">
                         </div>
+
                         <div class="form-group  " id="zkHosts_field">
                             <label class="control-label" for="zkHosts">Cluster Zookeeper Hosts</label>
-                            <input type="text" id="zkHosts" name="zkHosts" value="" class="form-control"
+                            <input type="text" id="zkHosts" name="zkHosts" value=""
+                                   datatype="*"
+                                   nullmsg="Please enter cluster zk hosts!"
+                                   errormsg="Cluster zk hosts is illegal!"
+                                   sucmsg="OK !"
+                                   class="form-control"
                                    placeholder="zk1:2181,zk2:2181,zk3:2181/NAMESPACE">
                         </div>
+
                         <div class="form-group  " id="kafkaVersion_field">
                             <label class="control-label" for="kafkaVersion">Kafka Version</label>
                             <select id="kafkaVersion" name="kafkaVersion" class="form-control">
@@ -87,6 +100,7 @@
                                 <option value="0.8.2.0">0.8.2.0</option>
                             </select>
                         </div>
+
                         <div class="form-group  " id="jmxEnabled_field">
                             <div class="checkbox">
                                 <label for="jmxEnabled">
@@ -95,14 +109,17 @@
                                 </label>
                             </div>
                         </div>
+
                         <div class="form-group  " id="jmxUser_field">
                             <label class="control-label" for="jmxUser">JMX Auth Username</label>
                             <input type="text" id="jmxUser" name="jmxUser" value="" class="form-control">
                         </div>
+
                         <div class="form-group  " id="jmxPass_field">
                             <label class="control-label" for="jmxPass">JMX Auth Password</label>
                             <input type="text" id="jmxPass" name="jmxPass" value="" class="form-control">
                         </div>
+
                         <div class="form-group  " id="logkafkaEnabled_field">
                             <div class="checkbox">
                                 <label for="logkafkaEnabled">
@@ -111,6 +128,7 @@
                                 </label>
                             </div>
                         </div>
+
                         <div class="form-group  " id="pollConsumers_field">
                             <div class="checkbox">
                                 <label for="pollConsumers">
@@ -119,6 +137,7 @@
                                 </label>
                             </div>
                         </div>
+
                         <div class="form-group  " id="filterConsumers_field">
                             <div class="checkbox">
                                 <label for="filterConsumers">
@@ -128,6 +147,7 @@
 
                             </div>
                         </div>
+
                         <div class="form-group  " id="activeOffsetCacheEnabled_field">
                             <div class="checkbox">
                                 <label for="activeOffsetCacheEnabled">
@@ -136,7 +156,6 @@
                                     Enable Active OffsetCache (Not recommended for large # of consumers)
                                 </label>
                             </div>
-
                         </div>
 
                         <div class="form-group  " id="displaySizeEnabled_field">
@@ -149,96 +168,179 @@
                                 </label>
                             </div>
                         </div>
+
                         <div class="form-group  " id="tuning_brokerViewUpdatePeriodSeconds_field">
                             <label class="control-label" for="tuning_brokerViewUpdatePeriodSeconds">brokerViewUpdatePeriodSeconds</label>
                             <input type="number" id="tuning_brokerViewUpdatePeriodSeconds"
-                                   name="tuning.brokerViewUpdatePeriodSeconds" value="30" class="form-control">
+                                   name="tuning.brokerViewUpdatePeriodSeconds" value="30"
+                                   datatype="n2-3 | /^1000$/"
+                                   nullmsg="Can't be empty !"
+                                   errormsg="Must in [10,1000] !"
+                                   sucmsg="OK !"
+                                   class="form-control">
                         </div>
 
                         <div class="form-group  " id="tuning_clusterManagerThreadPoolSize_field">
-
                             <label class="control-label" for="tuning_clusterManagerThreadPoolSize">clusterManagerThreadPoolSize</label>
-
                             <input type="number" id="tuning_clusterManagerThreadPoolSize"
-                                   name="tuning.clusterManagerThreadPoolSize" value="2" class="form-control">
+                                   name="tuning.clusterManagerThreadPoolSize" value="2"
+                                   datatype="n2-3 | /^1000$/ | /^[2-9]$/"
+                                   nullmsg="Can't be empty !"
+                                   errormsg="Must in [2,1000] !"
+                                   sucmsg="OK !"
+                                   class="form-control">
                         </div>
+
                         <div class="form-group  " id="tuning_clusterManagerThreadPoolQueueSize_field">
-
-
                             <label class="control-label" for="tuning_clusterManagerThreadPoolQueueSize">clusterManagerThreadPoolQueueSize</label>
-
-
                             <input type="number" id="tuning_clusterManagerThreadPoolQueueSize"
-                                   name="tuning.clusterManagerThreadPoolQueueSize" value="100" class="form-control">
+                                   name="tuning.clusterManagerThreadPoolQueueSize" value="100"
+                                   datatype="n2-3 | /^1000$/"
+                                   nullmsg="Can't be empty !"
+                                   errormsg="Must in [10,1000] !"
+                                   sucmsg="OK !"
+                                   class="form-control">
                         </div>
+
                         <div class="form-group  " id="tuning_kafkaCommandThreadPoolSize_field">
                             <label class="control-label" for="tuning_kafkaCommandThreadPoolSize">kafkaCommandThreadPoolSize</label>
                             <input type="number" id="tuning_kafkaCommandThreadPoolSize"
-                                   name="tuning.kafkaCommandThreadPoolSize" value="2" class="form-control">
+                                   name="tuning.kafkaCommandThreadPoolSize" value="2"
+                                   datatype="n2-3 | /^1000$/ | /^[2-9]$/"
+                                   nullmsg="Can't be empty !"
+                                   errormsg="Must in [2,1000] !"
+                                   sucmsg="OK !"
+                                   class="form-control">
                         </div>
+
                         <div class="form-group  " id="tuning_kafkaCommandThreadPoolQueueSize_field">
                             <label class="control-label" for="tuning_kafkaCommandThreadPoolQueueSize">kafkaCommandThreadPoolQueueSize</label>
                             <input type="number" id="tuning_kafkaCommandThreadPoolQueueSize"
-                                   name="tuning.kafkaCommandThreadPoolQueueSize" value="100" class="form-control">
+                                   name="tuning.kafkaCommandThreadPoolQueueSize" value="100"
+                                   datatype="n2-3 | /^1000$/"
+                                   nullmsg="Can't be empty !"
+                                   errormsg="Must in [10,1000] !"
+                                   sucmsg="OK !"
+                                   class="form-control">
                         </div>
+
                         <div class="form-group  " id="tuning_logkafkaCommandThreadPoolSize_field">
                             <label class="control-label" for="tuning_logkafkaCommandThreadPoolSize">logkafkaCommandThreadPoolSize</label>
                             <input type="number" id="tuning_logkafkaCommandThreadPoolSize"
-                                   name="tuning.logkafkaCommandThreadPoolSize" value="2" class="form-control">
+                                   name="tuning.logkafkaCommandThreadPoolSize" value="2"
+                                   datatype="n2-3 | /^1000$/ | /^[2-9]$/"
+                                   nullmsg="Can't be empty !"
+                                   errormsg="Must in [2,1000] !"
+                                   sucmsg="OK !"
+                                   class="form-control">
                         </div>
+
                         <div class="form-group  " id="tuning_logkafkaCommandThreadPoolQueueSize_field">
                             <label class="control-label" for="tuning_logkafkaCommandThreadPoolQueueSize">logkafkaCommandThreadPoolQueueSize</label>
                             <input type="number" id="tuning_logkafkaCommandThreadPoolQueueSize"
-                                   name="tuning.logkafkaCommandThreadPoolQueueSize" value="100" class="form-control">
+                                   name="tuning.logkafkaCommandThreadPoolQueueSize" value="100"
+                                   datatype="n2-3 | /^1000$/"
+                                   nullmsg="Can't be empty !"
+                                   errormsg="Must in [10,1000] !"
+                                   sucmsg="OK !"
+                                   class="form-control">
                         </div>
+
                         <div class="form-group  " id="tuning_logkafkaUpdatePeriodSeconds_field">
                             <label class="control-label" for="tuning_logkafkaUpdatePeriodSeconds">logkafkaUpdatePeriodSeconds</label>
                             <input type="number" id="tuning_logkafkaUpdatePeriodSeconds"
-                                   name="tuning.logkafkaUpdatePeriodSeconds" value="30" class="form-control">
+                                   name="tuning.logkafkaUpdatePeriodSeconds" value="30"
+                                   datatype="n2-3 | /^1000$/"
+                                   nullmsg="Can't be empty !"
+                                   errormsg="Must in [10,1000] !"
+                                   sucmsg="OK !"
+                                   class="form-control">
                         </div>
+
                         <div class="form-group  " id="tuning_partitionOffsetCacheTimeoutSecs_field">
                             <label class="control-label" for="tuning_partitionOffsetCacheTimeoutSecs">partitionOffsetCacheTimeoutSecs</label>
                             <input type="number" id="tuning_partitionOffsetCacheTimeoutSecs"
-                                   name="tuning.partitionOffsetCacheTimeoutSecs" value="5" class="form-control">
+                                   name="tuning.partitionOffsetCacheTimeoutSecs" value="5"
+                                   datatype="n2-3 | /^1000$/ | /^[5-9]$/"
+                                   nullmsg="Can't be empty !"
+                                   errormsg="Must in [5,1000] !"
+                                   sucmsg="OK !"
+                                   class="form-control">
                         </div>
+
                         <div class="form-group  " id="tuning_brokerViewThreadPoolSize_field">
                             <label class="control-label"
                                    for="tuning_brokerViewThreadPoolSize">brokerViewThreadPoolSize</label>
                             <input type="number" id="tuning_brokerViewThreadPoolSize"
-                                   name="tuning.brokerViewThreadPoolSize" value="1" class="form-control">
+                                   name="tuning.brokerViewThreadPoolSize" value="2"
+                                   datatype="n2-3 | /^1000$/ | /^[2-9]$/"
+                                   nullmsg="Can't be empty !"
+                                   errormsg="Must in [2,1000] !"
+                                   sucmsg="OK !"
+                                   class="form-control">
                         </div>
+
                         <div class="form-group  " id="tuning_brokerViewThreadPoolQueueSize_field">
                             <label class="control-label" for="tuning_brokerViewThreadPoolQueueSize">brokerViewThreadPoolQueueSize</label>
                             <input type="number" id="tuning_brokerViewThreadPoolQueueSize"
-                                   name="tuning.brokerViewThreadPoolQueueSize" value="1000" class="form-control">
+                                   name="tuning.brokerViewThreadPoolQueueSize" value="1000"
+                                   datatype="n2-3 | /^1000$/"
+                                   nullmsg="Can't be empty !"
+                                   errormsg="Must in [10,1000] !"
+                                   sucmsg="OK !"
+                                   class="form-control">
                         </div>
+
                         <div class="form-group  " id="tuning_offsetCacheThreadPoolSize_field">
                             <label class="control-label" for="tuning_offsetCacheThreadPoolSize">offsetCacheThreadPoolSize</label>
                             <input type="number" id="tuning_offsetCacheThreadPoolSize"
-                                   name="tuning.offsetCacheThreadPoolSize" value="1" class="form-control">
+                                   name="tuning.offsetCacheThreadPoolSize" value="2"
+                                   datatype="n2-3 | /^1000$/ | /^[2-9]$/"
+                                   nullmsg="Can't be empty !"
+                                   errormsg="Must in [2,1000] !"
+                                   sucmsg="OK !"
+                                   class="form-control">
                         </div>
+
                         <div class="form-group  " id="tuning_offsetCacheThreadPoolQueueSize_field">
                             <label class="control-label" for="tuning_offsetCacheThreadPoolQueueSize">offsetCacheThreadPoolQueueSize</label>
                             <input type="number" id="tuning_offsetCacheThreadPoolQueueSize"
-                                   name="tuning.offsetCacheThreadPoolQueueSize" value="1000" class="form-control">
+                                   name="tuning.offsetCacheThreadPoolQueueSize" value="1000"
+                                   datatype="n2-3 | /^1000$/"
+                                   nullmsg="Can't be empty !"
+                                   errormsg="Must in [10,1000] !"
+                                   sucmsg="OK !"
+                                   class="form-control">
                         </div>
+
                         <div class="form-group  " id="tuning_kafkaAdminClientThreadPoolSize_field">
                             <label class="control-label" for="tuning_kafkaAdminClientThreadPoolSize">kafkaAdminClientThreadPoolSize</label>
                             <input type="number" id="tuning_kafkaAdminClientThreadPoolSize"
-                                   name="tuning.kafkaAdminClientThreadPoolSize" value="1" class="form-control">
+                                   name="tuning.kafkaAdminClientThreadPoolSize" value="2"
+                                   datatype="n2-3 | /^1000$/ | /^[2-9]$/"
+                                   nullmsg="Can't be empty !"
+                                   errormsg="Must in [2,1000] !"
+                                   sucmsg="OK !"
+                                   class="form-control">
                         </div>
+
                         <div class="form-group  " id="tuning_kafkaAdminClientThreadPoolQueueSize_field">
                             <label class="control-label" for="tuning_kafkaAdminClientThreadPoolQueueSize">kafkaAdminClientThreadPoolQueueSize</label>
                             <input type="number" id="tuning_kafkaAdminClientThreadPoolQueueSize"
-                                   name="tuning.kafkaAdminClientThreadPoolQueueSize" value="1000" class="form-control">
+                                   name="tuning.kafkaAdminClientThreadPoolQueueSize" value="1000"
+                                   datatype="n2-3 | /^1000$/"
+                                   nullmsg="Can't be empty !"
+                                   errormsg="Must in [10,1000] !"
+                                   sucmsg="OK !"
+                                   class="form-control">
                         </div>
+
                         <div class="form-group  ">
                             <button type="submit" class="submit-button btn btn-primary"> Save</button>
                         </div>
                         <a href="/" class="cancel-button btn btn-default" role="button">Cancel</a>
                     </fieldset>
                 </form>
-
             </div>
         </div>
         <div class="panel panel-info">
@@ -273,6 +375,19 @@
         $('[type=submit]').prop('disabled', true);
         $('[type=submit]').removeAttr('type');
     }
+
+    $(function(){
+      $(".checkform").Validform({
+        tiptype:4,
+        datatype:{
+          'cluster':/^[a-z0-9_\.-]{1,}$//*,
+          'num2_1000': /^\d{6,16}$/ || /^1000$/ || /^[2-9]$/,
+          'num5_1000': /^\d{6,16}$/ || /^1000$/ || /^[5-9]$/,
+          'num10_1000': /^\d{6,16}$/ || /^1000$/*/
+        }
+      });
+    })//add 12-23
+
 </script>
 
 </body>

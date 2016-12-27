@@ -10,6 +10,9 @@ var async = require('async');
 
 var testInfo = require('../test/gettestInfo')
 var AllCluster = [];
+var TopicList = [];//add jnn 12-23 全局存储创建的topic信息
+var ClusterList = [];//add jnn 12-23 全局存储创建的cluster信息
+var addClusterName = '';//add jnn 12-23 全局存储添加cluster名称
 AllCluster.length = 1;  // 全局存储创建的cluster 信息
 AllCluster['test111'] = testInfo(); //console.log(AllCluster["test111"])
 
@@ -17,14 +20,14 @@ AllCluster['test111'] = testInfo(); //console.log(AllCluster["test111"])
 var BrokerList = ''; //全局，提供给topic list页面 和 brokers页面
 var BrokerList_Topic = [];//给topic页面连接信息
 var BrokerNumber = 4;
-var OriginBrokerList = [];
+var TotalBrokerList = [];
 
 zkutil.getBrokerList(function (err, _BrokerList) {
   if (err) {
     console.log("get Original BrokerList Error");
     return console.log(new Error(err));
   } else {
-    OriginBrokerList = _BrokerList;
+    TotalBrokerList = _BrokerList;
   }
 });
 
@@ -60,6 +63,7 @@ router.get('/getclusters', function (req, res, next) {
   var clusters = [];
   for (var key in AllCluster) {
     var cluster = new Object();
+    ClusterList.push(key);//add jnn 12-23
     cluster.name = key;
     cluster.kafkaVersion = AllCluster[key]["kafkaVersion"];
     cluster.zkHosts = AllCluster[key]["zkHosts"];
@@ -80,33 +84,48 @@ router.get('/addCluster', function (req, res, next) {
 var temp_clustername;
 var modifyClusterTitle;
 router.get('/clusters', function (req, res, next) {
-  var checkedkey = ["logkafkaEnabled", "pollConsumers", "filterConsumers", "activeOffsetCacheEnabled", "displaySizeEnabled"];
-  var attresult = [];
-  var attsjson = req.query;// console.log("!!!!!!!!!!!!" );console.log(req)
-  var clustername = req.query.name
-  attresult["clustername"] = clustername;
-  attresult["zkHosts"] = attsjson.zkHosts; //因为zkHost里面有：，会影响下面继续以：为分隔符进行分割，先保存
-  var attsstr = JSON.stringify(attsjson);//console.log(attsstr)
-  var arrs = attsstr.slice(1, -1).split(",");
-  for (var i = 2; i < arrs.length; i++) {
-    var temp = arrs[i].split(":");
-    attresult[temp[0].slice(1, -1)] = temp[1].slice(1, -1)
-  }
-  for (var j = 0; j < checkedkey.length; j++) {
-    !function (j) {
-      if (attresult.hasOwnProperty(checkedkey[j])) {
-        attresult["check_" + checkedkey[j]] = "true";
-      } else {
-        attresult["check_" + checkedkey[j]] = "false";
+  addClusterName = req.query.name;//add jnn 12-23
+  async.each(ClusterList, function(cluster_item, callback){
+    if(addClusterName==cluster_item) callback('cluster is existed!');
+    else callback();
+  }, function(err){
+    if(err) res.redirect('/pages/addClusterFailed.html');
+    else { //end add jnn 12-23
+      var checkedkey = ["logkafkaEnabled", "pollConsumers", "filterConsumers", "activeOffsetCacheEnabled", "displaySizeEnabled"];
+      var attresult = [];
+      var attsjson = req.query;// console.log("!!!!!!!!!!!!" );console.log(req)
+      var clustername = req.query.name
+      attresult["clustername"] = clustername;
+      attresult["zkHosts"] = attsjson.zkHosts; //因为zkHost里面有：，会影响下面继续以：为分隔符进行分割，先保存
+      var attsstr = JSON.stringify(attsjson);//console.log(attsstr)
+      var arrs = attsstr.slice(1, -1).split(",");
+      for (var i = 2; i < arrs.length; i++) {
+        var temp = arrs[i].split(":");
+        attresult[temp[0].slice(1, -1)] = temp[1].slice(1, -1)
       }
-    }(j)
-  }//console.log(attresult);
-  AllCluster[attresult["clustername"]] = attresult;
-  AllCluster.length++;
-  temp_clustername = clustername;
-  modifyClusterTitle = "Add Cluster"
-  res.redirect('/pages/changeclusterresult.html');
+      for (var j = 0; j < checkedkey.length; j++) {
+        !function (j) {
+          if (attresult.hasOwnProperty(checkedkey[j])) {
+            attresult["check_" + checkedkey[j]] = "true";
+          } else {
+            attresult["check_" + checkedkey[j]] = "false";
+          }
+        }(j)
+      }//console.log(attresult);
+      AllCluster[attresult["clustername"]] = attresult;
+      AllCluster.length++;
+      temp_clustername = clustername;
+      modifyClusterTitle = "Add Cluster"
+      res.redirect('/pages/changeclusterresult.html');
+    }
+  })
 });
+
+/* GET cluster create result: Failed. //add jnn 12-23*/
+router.get('/getCreateClusterFailed', function (req, res, next) {
+  res.send(addClusterName);
+});
+
 router.get('/get_ChangeClusterResult', function (req, res, next) {
   res.send({title: modifyClusterTitle, clustername: temp_clustername});
 });
@@ -123,10 +142,11 @@ router.get('/get_ClusterInfo', function (req, res, next) {
     if (err) {
       return console.log(new Error(err));
     }
-    kafka.getlistlen(function (listlen) {
+    kafka.listTopics(function (list) {//mod jnn 12-23
+      TopicList = list; //add jnn 12-23
       res.send({
         clusterInfoname: temp_clustername,
-        listlen: listlen,
+        listlen: list.length,//mod jnn 12-23
         bronum: bronum,
         zkHosts: AllCluster[temp_clustername]['zkHosts'],
         Version: AllCluster[temp_clustername]['kafkaVersion']
@@ -195,7 +215,7 @@ router.post('/clusters/:clustername', function (req, res, next) {
     var attsstr = JSON.stringify(attsjson);//console.log("转成字符串" + attsstr)
     var arrs = attsstr.slice(1, -1).split(",");//console.log("分割成数组" + arrs)
     for (var j = 0; j < checkedkey.length; j++) {// console.log("删除已经加入的checked");
-      changedInfo["check_" + checkedkey[j]] = "false";
+      changedInfo["check_" + checkedkey[j]] = false;
     }
     for (var i = 3; i < arrs.length; i++) { //要从zkHost后一位开始以：分割，此时zhHosts的位置是2,
       var temp = arrs[i].split(":");
@@ -203,7 +223,7 @@ router.post('/clusters/:clustername', function (req, res, next) {
       var value = temp[1].slice(1, -1);
       changedInfo[key] = value;
       if (checkedkey.indexOf(key) > -1) {// console.log("有checked 选项" + key)
-        changedInfo["check_" + key] = "true";
+        changedInfo["check_" + key] = true;
       }
     }
     modifyClusterTitle = "Update Cluster";
@@ -247,12 +267,21 @@ router.get('/getTopicList', function (req, res, next) {
   //console.log('-------'+clustername);
   var topicList = new Array();
   var result = new Object();
+  //add 12-12
+  var topicnames = new Array();
+  var offsets = new Array();
+  var partitions = new Array();
+  var tbrokers = new Array();
+  var replicas = new Array();
+  var producerMsg = new Array();
+  //end add 12-12
 
   kafka.getTopicList(function (err, t_data) {
     if (err) {
       return console.log(new Error(err));
     }
     var brokers = t_data.brokerList.length;
+    TopicList = t_data.topicList;//add jnn 12-23
     //console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~brokers num ' + brokers +', list '+t_data.brokerList)
     jmxutil.getJMXdata(BrokerList_Topic, brokers, t_data.topicList, function (err, jmx_data) {
       if (err) {
@@ -277,6 +306,15 @@ router.get('/getTopicList', function (req, res, next) {
           if (ts_data.unserReplicated >= 50) ts_data.u_rpl_class = 'danger';
           else if (ts_data.unserReplicated > 0) ts_data.u_rpl_class = 'warning';
           topicList.push(ts_data);
+          //add 12-12
+          topicnames.push(ts_data.name);
+          offsets.push(ts_data.offset);
+          partitions.push(ts_data.partitions);
+          tbrokers.push(ts_data.t_brokers);
+          replicas.push(ts_data.replicas);
+          producerMsg.push(ts_data.producerMsg);
+          //end add 12-12
+
           //console.log('~~~~~~\n');
           //console.log(ts_data);
           callback();
@@ -288,6 +326,14 @@ router.get('/getTopicList', function (req, res, next) {
         console.log('==========' + temp_clustername)
         result.topicList = topicList;
         result.clusters = temp_clustername;
+        //add 12-12
+        result.topicnames = topicnames;
+        result.offsets = offsets;
+        result.partitions = partitions;
+        result.tbrokers = tbrokers;
+        result.replicas = replicas;
+        result.producerMsg = producerMsg;
+        //end add 12-12
         res.send(result);
       })
     })
@@ -305,6 +351,14 @@ router.get('/clusters/:clustername/topics/:topic_name', function (req, res, next
 router.get('/getTopicDetails', function (req, res, next) {
   var topicdetails = new Object();
   var result = new Object();
+  //add 12-13
+  var name_tmp = new Array();
+  var offsets_arr = new Array();
+  var partitions_arr = new Array();
+  var p_dis = new Array();
+  var replicas_arr = new Array();
+  //end add 12-13
+
   kafka.getTopicSummary(topic_name, function (err, ts_data) {
     if (err) {
       return console.log(new Error(err));
@@ -335,6 +389,81 @@ router.get('/getTopicDetails', function (req, res, next) {
           }
         }
 
+        //add 12-13
+        for (var i= 0; i< ts_data.broker_list.length; i++){
+          !function(i){
+            for(var j= 0; j< ts_data.broker_list[i].partition_list.length; j++){
+              !function(j){
+                var r_arr = new Array();
+                var tmp_arr = new Array();
+                r_arr.push(ts_data.broker_list[i].broker);
+                r_arr.push(j+1);
+
+                tmp_arr.push(r_arr);
+                replicas_arr.push({
+                  name: 'Replica of Partition '+ ts_data.broker_list[i].partition_list[j],
+                  color: 'rgba('+Math.floor(Math.random()*256)+','+Math.floor(Math.random()*256)+','+Math.floor(Math.random()*256)+',0.7)',
+                  data: tmp_arr
+                });
+              }(j);
+            }
+          }(i);
+        }
+
+        name_tmp.push(topic_name);
+        for(var i= 0; i< ts_data.partitions_list.length; i++){
+          !function(i){
+            var offsetdata_tmp = new Array();
+            offsetdata_tmp.push(ts_data.partitions_list[i].p_offset);
+            offsets_arr.push({
+              name:'Partition'+ts_data.partitions_list[i].parition_id,
+              data:offsetdata_tmp
+            });
+
+            var broker_partition = new Array();
+            var b_p_tmp = new Array();
+            broker_partition.push(ts_data.partitions_list[i].leader+(Math.random()-0.5)/2);
+            broker_partition.push(Math.floor(Math.random()*10));
+            if(ts_data.partitions_list[i].p_offset==0) broker_partition.push(5);
+            else if(ts_data.partitions_list[i].p_offset<100) broker_partition.push(Math.floor(ts_data.partitions_list[i].p_offset/100)+6);
+            else if(ts_data.partitions_list[i].p_offset<1000) broker_partition.push(Math.floor(ts_data.partitions_list[i].p_offset/1000)+7);
+            else if(ts_data.partitions_list[i].p_offset<10000) broker_partition.push(Math.floor(ts_data.partitions_list[i].p_offset/10000)+8);
+            else if(ts_data.partitions_list[i].p_offset<100000) broker_partition.push(Math.floor(ts_data.partitions_list[i].p_offset/100000)+9);
+            else if(ts_data.partitions_list[i].p_offset<1000000) broker_partition.push(Math.floor(ts_data.partitions_list[i].p_offset/1000000)+10);
+            else if(ts_data.partitions_list[i].p_offset<10000000) broker_partition.push(Math.floor(ts_data.partitions_list[i].p_offset/10000000)+12);
+            else broker_partition.push(Math.floor(ts_data.partitions_list[i].p_offset/1000000)+14);
+
+            b_p_tmp.push(broker_partition)
+            partitions_arr.push({
+              name: 'Partition '+ ts_data.partitions_list[i].parition_id,
+              //color: 'rgba('+Math.floor(Math.random()*256)+','+Math.floor(Math.random()*256)+','+Math.floor(Math.random()*256)+',0.7)',
+              data: b_p_tmp,
+              marker: {
+                fillColor: {
+                  radialGradient: { cx: 0.4, cy: 0.3, r: 0.7 },
+                  stops: [
+                    [0, 'rgba(255,255,255,0.5)'],
+                    [1, 'rgba('+Math.floor(Math.random()*256)+','+Math.floor(Math.random()*256)+','+Math.floor(Math.random()*256)+',0.5)']
+                  ]
+                }
+              }
+            });
+
+            var p_arr = new Array();
+            var tmp_arr = new Array();
+            p_arr.push(ts_data.partitions_list[i].leader);
+            p_arr.push(Math.floor(Math.random()*10));
+            tmp_arr.push(p_arr);
+            p_dis.push({
+              name: 'Partition '+ ts_data.partitions_list[i].parition_id,
+              color: 'rgba('+Math.floor(Math.random()*256)+','+Math.floor(Math.random()*256)+','+Math.floor(Math.random()*256)+',0.7)',
+              data: tmp_arr
+            });
+
+          }(i)
+        }
+        //end add 12-13
+
         topicdetails.offset = jmx_data.end_offset;
         topicdetails.under_replicated = Math.floor(jmx_data.under_replicated * 100 / ts_data.partitions);
         topicdetails.underReplicated_arr = jmx_data.underReplicated_arr;
@@ -351,8 +480,6 @@ router.get('/getTopicDetails', function (req, res, next) {
         else if (ts_data.brokerSkewed > 0) ts_data.b_skw_class = 'warning';
         if (topicdetails.under_replicated >= 50) ts_data.u_rpl_class = 'danger';
         else if (topicdetails.under_replicated > 0) ts_data.u_rpl_class = 'warning';
-        console.log("=======")
-        console.log(ts_data)
 
         topicdetails.logPartition_arr = jmx_data.logEndPartition_arr;//console.log(topicdetails.logPartition_arr)
         topicdetails.metrics = jmx_data.metrics;
@@ -362,6 +489,14 @@ router.get('/getTopicDetails', function (req, res, next) {
         result.clustername = temp_clustername;
         result.topic_name = topic_name;
         result.consumers = consumers;
+
+        //add 12-13
+        result.offsets_arr = {topic: name_tmp, offsets_arr: offsets_arr};
+        result.partitions_arr = partitions_arr;
+        result.replicas_arr = replicas_arr;
+        result.p_dis = p_dis;
+        //end add 12-13
+
         res.send(result);
       })
     })
@@ -383,12 +518,30 @@ router.get('/getCreateTopic', function (req, res, next) {
 router.get('/clusters/:clustername/createResult', function (req, res, next) {
   temp_clustername = req.params.clustername;
   topic_name = req.query.topic;
-  res.redirect('/pages/createTopicResult.html');
+  //mod jnn 12-23
+  async.each(TopicList, function (topic_item, callback) {
+    if (topic_name == topic_item) callback('Topic is existed!')
+    else callback()
+  }, function (err) {
+    if (err) res.redirect('/pages/createTopicFailed.html');
+    else res.redirect('/pages/createTopicResult.html');
+    //end mod jnn 12-23
+    //res.redirect('/pages/createTopicResult.html'); //-- jnn 12-23
+  });
 });
 
-/* GET topic create result. */
+/* GET topic create result: Failed. */
+router.get('/getCreateTopicFailed', function (req, res, next) {
+  var result = new Object();
+  result.topic_name = topic_name;
+  result.clustername = temp_clustername;
+  res.send(result);
+});
+
+/* GET topic create result: Success. */
 router.get('/getCreateTopicResult', function (req, res, next) {
   var result = new Object();
+
   nodeutils.createTopic(topic_name, function (err) {
     if (err) {
       return console.log(new Error(err));
@@ -396,8 +549,10 @@ router.get('/getCreateTopicResult', function (req, res, next) {
     result.topic_name = topic_name;
     result.clustername = temp_clustername;
     res.send(result);
-  })
+  });
 });
+
+
 
 /* Broker list 页面*/
 router.get('/clusters/:clustername/brokers', function (req, res, next) {
@@ -420,21 +575,21 @@ router.get('/get_Brokers', function (req, res, next) {
       for (var j = 0; j < BrokerList.length; j++) {
         aliveBrokerIds.push(Number(BrokerList[j][0]));
       }
-      for (var i = 0; i < OriginBrokerList.length; i++) {
-        OriginBrokerIds.push(OriginBrokerList[i][0]);
+      for (var i = 0; i < TotalBrokerList.length; i++) {
+        OriginBrokerIds.push(TotalBrokerList[i][0]);
       }
       for (var k = 0; k < BrokerList.length; k++) {
         if (OriginBrokerIds.indexOf(BrokerList[k][0]) == -1) {
-          OriginBrokerList.push(BrokerList[k]);
+          TotalBrokerList.push(BrokerList[k]);
         }
       }
 
-      OriginBrokerList.sort(compare(0));
+      TotalBrokerList.sort(compare(0));
       res.send({
         clustername: temp_clustername,
         combinedMetrics: combinedMetrics,
         BrokerList: BrokerList,
-        OriginBrokerList: OriginBrokerList,
+        TotalBrokerList: TotalBrokerList,
         aliveBrokerIds: aliveBrokerIds
       })
     });

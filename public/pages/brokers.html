@@ -15,9 +15,8 @@
 
   <script src="/javascripts/vue.js"></script>
 
-  <script type="text/javascript" src="http://cdn.hcharts.cn/highcharts/highcharts.js"></script>
-  <script type="text/javascript" src="http://cdn.hcharts.cn/highcharts/modules/exporting.js"></script>
-  <script type="text/javascript" src="http://cdn.hcharts.cn/highcharts/highcharts-more.js"></script>
+  <script src="/highcharts/highcharts.js"></script>
+  <script src="/highcharts/highcharts-more.js"></script>
 </head>
 
 
@@ -96,7 +95,7 @@
           <tbody>
           <!--Dynamic data-->
           <!--<template v-for="Broker in BrokerList">-->
-          <template v-for="Broker in OriginBrokerList">
+          <template v-for="Broker in TotalBrokerList">
             <tr>
               <td><a :href="'/clusters/' + clustername + '/brokers/' + Broker[0]">{{ Broker[0]
                 }}</a></td>
@@ -154,14 +153,22 @@
       </div>
     </div>
 
-    <div class="col-md-12 un-pad-me">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="panel panel-default">
+          <div class="panel-heading"><h3>Topic Partition Distribution</h3></div>
+          <div id="container2"></div>
+        </div>
+      </div>
+    </div>
+    <!--<div class="col-md-12 un-pad-me">
       <div class="panel panel-default">
         <div class="panel-heading">
           <h3>Broker 上 Topic 信息</h3>
           <div id="container2" style="min-height:500px"></div>
         </div>
       </div>
-    </div>
+    </div>-->
 
   </div>
 
@@ -201,13 +208,13 @@
           combinedMetrics: data.combinedMetrics,
           BrokerList: data.BrokerList,
           brokenBrokers: data.brokenBrokers,
-          OriginBrokerList:data.OriginBrokerList,
+          TotalBrokerList: data.TotalBrokerList,
           aliveBrokerIds: data.aliveBrokerIds
         },
         computed: {
           addedcombinedMetrics()
           {
-            var Ratetitle = ["Messages in", "Bytes in", "Bytes out", "Bytes rejected", "Failed fetch r equest", "Failed produce request"];
+            var Ratetitle = ["Messages in", "Bytes in", "Bytes out", "Bytes rejected", "Failed fetch request", "Failed produce request"];
             for (var i = 0; i < this.combinedMetrics.length; i++) {
               this.combinedMetrics[i][4] = Ratetitle[i];
             }
@@ -240,23 +247,28 @@
     success: function (data) {
       $(function () {
         $('#container2').highcharts({
+          credits: {
+            enabled: false
+          },
           chart: {
             type: 'bubble',
-            zoomType: 'xy'
+            zoomType: 'xy',
+            spacingLeft: 40,
+            spacingRight: 40
           },
           title: {
-            text: 'Broker 上 Topic 图'
+            text: null
           },
           xAxis: {
             showEmpty: false,
 //            categories: data.categories,
-            title: {
+            /*title: {
               text: 'Broker'
-            },
+            },*/
             labels: {
               formatter: function () {
                 return '<a href="' + 'http://127.0.0.1:3000/clusters/' + data.clustername + '/brokers/' + this.value + '">' +
-                  this.value + '</a>';
+                  'Broker ' + this.value + '</a>';
               }
             },
 
@@ -278,8 +290,8 @@
             layout: 'vertical',
             align: 'right',
             verticalAlign: 'top',
-            y: 30,
-            maxHeight: 150,
+            y: 50,
+            maxHeight: 250,
             navigation: {
               activeColor: 'red',
               animation: true,
@@ -293,8 +305,8 @@
             }
           },
           tooltip: {
-            headerFormat: '<b>{series.name}</b><br>',
-            pointFormat: 'broker{point.x:.0f} 上的 partition数目{point.z} '
+            headerFormat: '<b>{series.name}:</b><br>',
+            pointFormat: '<b>{point.z}</b> Partitions on Broker{point.x:.0f}',//'broker{point.x:.0f} 上的 partition数目{point.z} '
           },
           plotOptions: {
             column: {
@@ -308,7 +320,7 @@
                 events: {
                   click: function () {
 //                    location.href = 'http://bing.com/search?q='+ this.series.name;
-                    location.href = '/clusters/'+data.clustername+'/topics/'+ this.series.name;
+                    location.href = '/clusters/' + data.clustername + '/topics/' + this.series.name;
                   }
                 }
               }

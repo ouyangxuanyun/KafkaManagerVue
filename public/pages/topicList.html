@@ -19,6 +19,10 @@
   <script src="/dataTables/javascripts/dataTables.bootstrap.js"></script>
 
   <script src="/javascripts/vue.js"></script>
+
+  <script src="/highcharts/highcharts.js"></script>
+  <script src="/highcharts/highcharts-more.js"></script>
+
 </head>
 <body role="document">
 
@@ -110,6 +114,17 @@
           </tbody>
         </table>
       </div>
+
+      <div class="panel panel-default">
+        <div class="panel-heading"><h3>Offsets & Producer Message/Sec</h3></div>
+        <div id="container-1"></div>
+      </div>
+
+      <div class="panel panel-default">
+        <div class="panel-heading"><h3>Summary Information</h3></div>
+        <div id="container-summed" style="min-width:700px;min-height:1400px"></div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -148,7 +163,196 @@
           clusters: result.clusters,
           topicList: result.topicList
         }
-      })
+      });
+      $(function () {
+        $('#container-1').highcharts({
+          credits:{
+            enabled:false
+          },
+          chart: {
+            type: 'column'
+          },
+          title: {
+            text: null
+          },
+          xAxis: {
+            categories: result.topicnames,
+            alternateGridColor: 'rgb(252, 248, 227)',
+            labels: {
+              style: {
+                fontSize: '12px',
+                fontFamily: 'Verdana, sans-serif'
+              }/*,
+              formatter: function () {
+                return '<a href="' + 'http://127.0.0.1:3000/clusters/' + result.clusters + '/topics/' + this.value  + '">' +
+                  this.value + '</a>';
+              }*/
+            }
+          },
+          yAxis: [{
+            minorTickInterval: 'auto',
+            title: {
+              text: 'Offsets'
+            }
+          }, {
+            title: {
+              text: 'Producer Message/Sec'
+            },
+            opposite: true
+          }],
+          legend: {
+            shadow: false
+          },
+          tooltip: {
+            shared: true
+          },
+          plotOptions: {
+            column: {
+              grouping: false,
+              shadow: false,
+              borderWidth: 0
+            },
+            series: {
+              cursor: 'pointer',
+              point: {
+                events: {
+                  click: function () {
+                    location.href = '/clusters/'+result.clusters+'/topics/'+ result.topicList[this.x].name;
+                  }
+                }
+              }
+            }
+          },
+          series: [{
+            name: 'Offsets',
+            color: '#337ab7',
+            data: result.offsets,
+            pointPadding: 0.2,
+            pointPlacement: -0.25
+          }, {
+            name: 'Producer Message/Sec',
+            color: 'rgba(186,60,61,.9)',
+            data: result.producerMsg,
+            pointPadding: 0.2,
+            pointPlacement: 0.25,
+            yAxis: 1
+          }]
+        });
+        $('#container-summed').highcharts({
+          credits:{
+            enabled:false
+          },
+          chart: {
+            type: 'bar'
+          },
+          title: {
+            text: null
+          },
+          subtitle: {
+            text: null
+          },
+          xAxis: {
+            alternateGridColor: 'rgb(252, 248, 227)',
+            categories: result.topicnames,
+            title: {
+              text: null
+            },
+            labels: {
+              style: {
+                fontSize: '12px',
+                fontFamily: 'Verdana, sans-serif'
+              }
+            }
+          },
+          yAxis: {
+            min: 0,
+            title: {
+              text: null,
+              align: 'high'
+            }
+          },
+          tooltip: {
+            valueSuffix: null
+          },
+          plotOptions: {
+            bar: {
+              dataLabels: {
+                enabled: true
+              }
+            },
+            series: {
+              cursor: 'pointer',
+              point: {
+                events: {
+                  click: function () {
+                    location.href = '/clusters/'+result.clusters+'/topics/'+ result.topicList[this.x].name;
+                  }
+                }
+              }
+            }
+          },
+          legend: {
+            layout: 'vertical',
+            align: 'right',
+            verticalAlign: 'top',
+            floating: true,
+            borderWidth: 1,
+            backgroundColor: '#FFFFFF',
+            shadow: true
+          },
+          credits: {
+            enabled: false
+          },
+          series: [{
+            name: 'Partitions Number',
+            color: '#337AB7',
+            data: result.partitions
+          }, {
+            name: 'Brokers Number',
+            color: 'rgba(186,60,61,.9)',
+            data: result.tbrokers
+          }, {
+            name: 'Replicas Number',
+            color: '#555555',
+            data: result.replicas
+          }]
+        });
+        Highcharts.chart('container-2', {
+          chart: {
+            type: 'column'
+          },
+          xAxis: {
+            categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+          },
+
+          plotOptions: {
+            series: {
+              cursor: 'pointer',
+              point: {
+                events: {
+                  click: function () {
+                    location.href = '/clusters/'+result.clusters+'/topics/'+'test';
+//                    location.href = this.options.url;
+                  }
+                }
+              }
+            }
+          },
+
+          series: [{
+            data: [{
+              y: 29.9,
+              url: 'http://bing.com/search?q=foo'
+            }, {
+              y: 71.5,
+              url: 'http://bing.com/search?q=bar'
+            }, {
+              y: 106.4,
+              url: 'http://bing.com/search?q=foo+bar'
+            }]
+          }]
+        });
+      });
     },
     error: function (error) {
     }
@@ -160,7 +364,7 @@
   $(document).ready(function () {
     setTimeout(function () {
       $('#topics-table').DataTable();
-    }, 5000)
+    }, 7000)
   });
 </script>
 </body>

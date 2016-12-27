@@ -13,7 +13,6 @@ var BrokerList = [];
  */
 function getBrokerList(callback) {
   client.getChildren("/brokers/ids", function (error, children, stats) {
-    console.log("/brokers/ids/brokers/ids/brokers/ids/brokers/ids")
     BrokerList = [];
     if (error) {
       return callback(new Error(error.stack));

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Add Cluster</title>
+  <link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+  <link rel='stylesheet' href='/bootstrap-3.3.5/css/bootstrap.min.css'>
+
+  <link rel="stylesheet" media="screen" href="/stylesheets/index.min.css">
+  <link rel="stylesheet" media="screen" href="/dataTables/stylesheets/dataTables.bootstrap.css">
+  <link rel="stylesheet" media="screen" href="/chartist/stylesheets/chartist.min.css">
+  <!--
+  <script data-main="/vassets/javascripts/index.js" src="/webjars/requirejs/2.1.20/require.min.js"></script>
+  -->
+  <script src="/chartist/javascripts/chartist.min.js"></script>
+
+  <script src="/jquery-2.1.4/jquery.min.js"></script>
+  <script src="/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+  <script src="/dataTables/javascripts/jquery.dataTables.min.js"></script>
+  <script src="/dataTables/javascripts/dataTables.bootstrap.js"></script>
+
+  <script src="/javascripts/vue.js"></script>
+
+</head>
+<body role="document">
+
+<div id="vueTemp">
+<nav class="navbar navbar-default" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <img src="/images/favicon.png">
+      <a class="navbar-brand un-float-me" href="/">Kafka Manager</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container" role="main">
+  <ol class="breadcrumb">
+    <li><a href="/">Clusters</a></li>
+    <li class="active">Add Cluster</li>
+  </ol>
+
+  <div class="col-md-6 un-pad-me">
+    <div class="panel panel-default">
+      <div class="panel-heading"><h3>Add Cluster</h3></div>
+      <div class="alert alert-danger" role="alert">
+        <strong>Yikes!</strong> requirement failed: Cluster already exists : {{clustername}}
+        <a href="/addCluster">Try again.</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function goBack() {
+    window.history.back()
+  }
+
+  function checkBoxSelect(idPrefix, booleanValue, display) {
+    $("[id^=" + idPrefix + "]").prop("checked", booleanValue);
+  }
+
+  function selectBySubname(selectId, selectClass, display) {
+    var subname = $(selectId).val().toLowerCase();
+    $('.' + selectClass).not("[name*='" + subname + "']").css("display", "none");
+    $("[class='" + selectClass + "'][name*='" + subname + "']").css("display", display);
+    if (subname == "") {
+      $('.' + selectClass).css("display", display);
+    }
+  }
+
+  function disableSubmission() {
+    $('[type=submit]').prop('disabled', true);
+    $('[type=submit]').removeAttr('type');
+  }
+
+  $.ajax({
+    url: "/getCreateClusterFailed",
+    //data: {},
+    success: function (clustername) {
+      //alert(result.clustername);
+      new Vue({
+        el: '#vueTemp',
+        data: {
+          clustername: clustername
+        }
+      })
+    },
+    error: function (error) {
+    }
+  });//add jnn 12-23
+
+</script>
+</div>
+</body>
+</html>
+
