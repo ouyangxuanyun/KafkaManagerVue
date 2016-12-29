@@ -11,7 +11,6 @@ var async = require('async');
 var testInfo = require('../test/gettestInfo')
 var AllCluster = [];
 var TopicList = [];//add jnn 12-23 全局存储创建的topic信息
-var ClusterList = [];//add jnn 12-23 全局存储创建的cluster信息
 var addClusterName = '';//add jnn 12-23 全局存储添加cluster名称
 AllCluster.length = 1;  // 全局存储创建的cluster 信息
 AllCluster['test111'] = testInfo(); //console.log(AllCluster["test111"])
@@ -63,7 +62,6 @@ router.get('/getclusters', function (req, res, next) {
   var clusters = [];
   for (var key in AllCluster) {
     var cluster = new Object();
-    ClusterList.push(key);//add jnn 12-23
     cluster.name = key;
     cluster.kafkaVersion = AllCluster[key]["kafkaVersion"];
     cluster.zkHosts = AllCluster[key]["zkHosts"];
@@ -85,40 +83,36 @@ var temp_clustername;
 var modifyClusterTitle;
 router.get('/clusters', function (req, res, next) {
   addClusterName = req.query.name;//add jnn 12-23
-  async.each(ClusterList, function(cluster_item, callback){
-    if(addClusterName==cluster_item) callback('cluster is existed!');
-    else callback();
-  }, function(err){
-    if(err) res.redirect('/pages/addClusterFailed.html');
-    else { //end add jnn 12-23
-      var checkedkey = ["logkafkaEnabled", "pollConsumers", "filterConsumers", "activeOffsetCacheEnabled", "displaySizeEnabled"];
-      var attresult = [];
-      var attsjson = req.query;// console.log("!!!!!!!!!!!!" );console.log(req)
-      var clustername = req.query.name
-      attresult["clustername"] = clustername;
-      attresult["zkHosts"] = attsjson.zkHosts; //因为zkHost里面有：，会影响下面继续以：为分隔符进行分割，先保存
-      var attsstr = JSON.stringify(attsjson);//console.log(attsstr)
-      var arrs = attsstr.slice(1, -1).split(",");
-      for (var i = 2; i < arrs.length; i++) {
-        var temp = arrs[i].split(":");
-        attresult[temp[0].slice(1, -1)] = temp[1].slice(1, -1)
+  for (var key in AllCluster) {
+    if (addClusterName == key) res.redirect('/pages/addClusterFailed.html');
+  }
+//end add jnn 12-23
+  var checkedkey = ["logkafkaEnabled", "pollConsumers", "filterConsumers", "activeOffsetCacheEnabled", "displaySizeEnabled"];
+  var attresult = [];
+  var attsjson = req.query;// console.log("!!!!!!!!!!!!" );console.log(req)
+  var clustername = req.query.name
+  attresult["clustername"] = clustername;
+  attresult["zkHosts"] = attsjson.zkHosts; //因为zkHost里面有：，会影响下面继续以：为分隔符进行分割，先保存
+  var attsstr = JSON.stringify(attsjson);//console.log(attsstr)
+  var arrs = attsstr.slice(1, -1).split(",");
+  for (var i = 2; i < arrs.length; i++) {
+    var temp = arrs[i].split(":");
+    attresult[temp[0].slice(1, -1)] = temp[1].slice(1, -1)
+  }
+  for (var j = 0; j < checkedkey.length; j++) {
+    !function (j) {
+      if (attresult.hasOwnProperty(checkedkey[j])) {
+        attresult["check_" + checkedkey[j]] = "true";
+      } else {
+        attresult["check_" + checkedkey[j]] = "false";
       }
-      for (var j = 0; j < checkedkey.length; j++) {
-        !function (j) {
-          if (attresult.hasOwnProperty(checkedkey[j])) {
-            attresult["check_" + checkedkey[j]] = "true";
-          } else {
-            attresult["check_" + checkedkey[j]] = "false";
-          }
-        }(j)
-      }//console.log(attresult);
-      AllCluster[attresult["clustername"]] = attresult;
-      AllCluster.length++;
-      temp_clustername = clustername;
-      modifyClusterTitle = "Add Cluster"
-      res.redirect('/pages/changeclusterresult.html');
-    }
-  })
+    }(j)
+  }//console.log(attresult);
+  AllCluster[attresult["clustername"]] = attresult;
+  AllCluster.length++;
+  temp_clustername = clustername;
+  modifyClusterTitle = "Add Cluster"
+  res.redirect('/pages/changeclusterresult.html');
 });
 
 /* GET cluster create result: Failed. //add jnn 12-23*/
@@ -247,6 +241,9 @@ router.post('/clusters/:clustername', function (req, res, next) {
 
   if (req.body.operation == "Delete") {//console.log("Delete 提交了表单");
     delete(AllCluster[clustername]);
+    //add jnn 12-27
+
+    //end add jnn 12-27
     modifyClusterTitle = "Delete Cluster";
     temp_clustername = clustername;
     res.redirect('/pages/changeclusterresult.html');
@@ -390,19 +387,19 @@ router.get('/getTopicDetails', function (req, res, next) {
         }
 
         //add 12-13
-        for (var i= 0; i< ts_data.broker_list.length; i++){
-          !function(i){
-            for(var j= 0; j< ts_data.broker_list[i].partition_list.length; j++){
-              !function(j){
+        for (var i = 0; i < ts_data.broker_list.length; i++) {
+          !function (i) {
+            for (var j = 0; j < ts_data.broker_list[i].partition_list.length; j++) {
+              !function (j) {
                 var r_arr = new Array();
                 var tmp_arr = new Array();
                 r_arr.push(ts_data.broker_list[i].broker);
-                r_arr.push(j+1);
+                r_arr.push(j + 1);
 
                 tmp_arr.push(r_arr);
                 replicas_arr.push({
-                  name: 'Replica of Partition '+ ts_data.broker_list[i].partition_list[j],
-                  color: 'rgba('+Math.floor(Math.random()*256)+','+Math.floor(Math.random()*256)+','+Math.floor(Math.random()*256)+',0.7)',
+                  name: 'Replica of Partition ' + ts_data.broker_list[i].partition_list[j],
+                  color: 'rgba(' + Math.floor(Math.random() * 256) + ',' + Math.floor(Math.random() * 256) + ',' + Math.floor(Math.random() * 256) + ',0.7)',
                   data: tmp_arr
                 });
               }(j);
@@ -411,39 +408,39 @@ router.get('/getTopicDetails', function (req, res, next) {
         }
 
         name_tmp.push(topic_name);
-        for(var i= 0; i< ts_data.partitions_list.length; i++){
-          !function(i){
+        for (var i = 0; i < ts_data.partitions_list.length; i++) {
+          !function (i) {
             var offsetdata_tmp = new Array();
             offsetdata_tmp.push(ts_data.partitions_list[i].p_offset);
             offsets_arr.push({
-              name:'Partition'+ts_data.partitions_list[i].parition_id,
-              data:offsetdata_tmp
+              name: 'Partition' + ts_data.partitions_list[i].parition_id,
+              data: offsetdata_tmp
             });
 
             var broker_partition = new Array();
             var b_p_tmp = new Array();
-            broker_partition.push(ts_data.partitions_list[i].leader+(Math.random()-0.5)/2);
-            broker_partition.push(Math.floor(Math.random()*10));
-            if(ts_data.partitions_list[i].p_offset==0) broker_partition.push(5);
-            else if(ts_data.partitions_list[i].p_offset<100) broker_partition.push(Math.floor(ts_data.partitions_list[i].p_offset/100)+6);
-            else if(ts_data.partitions_list[i].p_offset<1000) broker_partition.push(Math.floor(ts_data.partitions_list[i].p_offset/1000)+7);
-            else if(ts_data.partitions_list[i].p_offset<10000) broker_partition.push(Math.floor(ts_data.partitions_list[i].p_offset/10000)+8);
-            else if(ts_data.partitions_list[i].p_offset<100000) broker_partition.push(Math.floor(ts_data.partitions_list[i].p_offset/100000)+9);
-            else if(ts_data.partitions_list[i].p_offset<1000000) broker_partition.push(Math.floor(ts_data.partitions_list[i].p_offset/1000000)+10);
-            else if(ts_data.partitions_list[i].p_offset<10000000) broker_partition.push(Math.floor(ts_data.partitions_list[i].p_offset/10000000)+12);
-            else broker_partition.push(Math.floor(ts_data.partitions_list[i].p_offset/1000000)+14);
+            broker_partition.push(ts_data.partitions_list[i].leader + (Math.random() - 0.5) / 2);
+            broker_partition.push(Math.floor(Math.random() * 10));
+            if (ts_data.partitions_list[i].p_offset == 0) broker_partition.push(5);
+            else if (ts_data.partitions_list[i].p_offset < 100) broker_partition.push(Math.floor(ts_data.partitions_list[i].p_offset / 100) + 6);
+            else if (ts_data.partitions_list[i].p_offset < 1000) broker_partition.push(Math.floor(ts_data.partitions_list[i].p_offset / 1000) + 7);
+            else if (ts_data.partitions_list[i].p_offset < 10000) broker_partition.push(Math.floor(ts_data.partitions_list[i].p_offset / 10000) + 8);
+            else if (ts_data.partitions_list[i].p_offset < 100000) broker_partition.push(Math.floor(ts_data.partitions_list[i].p_offset / 100000) + 9);
+            else if (ts_data.partitions_list[i].p_offset < 1000000) broker_partition.push(Math.floor(ts_data.partitions_list[i].p_offset / 1000000) + 10);
+            else if (ts_data.partitions_list[i].p_offset < 10000000) broker_partition.push(Math.floor(ts_data.partitions_list[i].p_offset / 10000000) + 12);
+            else broker_partition.push(Math.floor(ts_data.partitions_list[i].p_offset / 1000000) + 14);
 
             b_p_tmp.push(broker_partition)
             partitions_arr.push({
-              name: 'Partition '+ ts_data.partitions_list[i].parition_id,
+              name: 'Partition ' + ts_data.partitions_list[i].parition_id,
               //color: 'rgba('+Math.floor(Math.random()*256)+','+Math.floor(Math.random()*256)+','+Math.floor(Math.random()*256)+',0.7)',
               data: b_p_tmp,
               marker: {
                 fillColor: {
-                  radialGradient: { cx: 0.4, cy: 0.3, r: 0.7 },
+                  radialGradient: {cx: 0.4, cy: 0.3, r: 0.7},
                   stops: [
                     [0, 'rgba(255,255,255,0.5)'],
-                    [1, 'rgba('+Math.floor(Math.random()*256)+','+Math.floor(Math.random()*256)+','+Math.floor(Math.random()*256)+',0.5)']
+                    [1, 'rgba(' + Math.floor(Math.random() * 256) + ',' + Math.floor(Math.random() * 256) + ',' + Math.floor(Math.random() * 256) + ',0.5)']
                   ]
                 }
               }
@@ -452,11 +449,11 @@ router.get('/getTopicDetails', function (req, res, next) {
             var p_arr = new Array();
             var tmp_arr = new Array();
             p_arr.push(ts_data.partitions_list[i].leader);
-            p_arr.push(Math.floor(Math.random()*10));
+            p_arr.push(Math.floor(Math.random() * 10));
             tmp_arr.push(p_arr);
             p_dis.push({
-              name: 'Partition '+ ts_data.partitions_list[i].parition_id,
-              color: 'rgba('+Math.floor(Math.random()*256)+','+Math.floor(Math.random()*256)+','+Math.floor(Math.random()*256)+',0.7)',
+              name: 'Partition ' + ts_data.partitions_list[i].parition_id,
+              color: 'rgba(' + Math.floor(Math.random() * 256) + ',' + Math.floor(Math.random() * 256) + ',' + Math.floor(Math.random() * 256) + ',0.7)',
               data: tmp_arr
             });
 
@@ -494,7 +491,7 @@ router.get('/getTopicDetails', function (req, res, next) {
         result.offsets_arr = {topic: name_tmp, offsets_arr: offsets_arr};
         result.partitions_arr = partitions_arr;
         result.replicas_arr = replicas_arr;
-        result.p_dis = p_dis;
+        //result.p_dis = p_dis;//(没用到)
         //end add 12-13
 
         res.send(result);
@@ -551,7 +548,6 @@ router.get('/getCreateTopicResult', function (req, res, next) {
     res.send(result);
   });
 });
-
 
 
 /* Broker list 页面*/

@@ -250,19 +250,17 @@
     $('[type=submit]').prop('disabled', true);
     $('[type=submit]').removeAttr('type');
   }
-  //    $(document).ready(function () {
-  //        $('#broker-table').DataTable();
-  //    });
-  $(document).ready(function () {
-    setTimeout(function () {
-      $('#broker-table').DataTable();
-    }, 10000)
-  });
+
 
 </script>
 
 
 <script type="text/javascript">
+  $(document).ready(function () {
+    var dT = $('#broker-table').DataTable();
+    dT.destroy();
+  });
+
   $.ajax({
     url: "/get_BrokerDetail",
     success: function (data) {
@@ -299,8 +297,13 @@
             }
             return result;
           }
+        },
+        created(){
+          this.$nextTick(function() {
+            $('#broker-table').DataTable();
+          })
         }
-      })
+      });
     },
     error: function (error) {
     }

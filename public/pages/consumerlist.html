@@ -127,14 +127,11 @@
         $('[type=submit]').removeAttr('type');
     }
 </script>
-<script>
-    $(document).ready(function () {
-//        $('#consumer-table').DataTable();
-        setTimeout(function () {
-            $('#consumer-table').DataTable();
-        }, 500)
-    });
-</script>
+<!--<script>-->
+    <!--$(document).ready(function () {-->
+        <!--$('#consumer-table').DataTable()-->
+    <!--});-->
+<!--</script>-->
 <script type="text/javascript">
     $.ajax({
         url: "/get_ConsumerList",
@@ -144,7 +141,12 @@
                 data: {
                     clustername: data.clustername,
                     allconsumeInfo: data.allconsumeInfo
-                }
+                },
+              created(){
+                this.$nextTick(function() {
+                  $('#consumer-table').DataTable();
+                })
+              }
             })
         },
         error: function (error) {

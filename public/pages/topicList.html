@@ -162,7 +162,12 @@
         data: {
           clusters: result.clusters,
           topicList: result.topicList
-        }
+        },
+        created(){
+          this.$nextTick(function() {
+            $('#topics-table').DataTable();
+          })
+        },
       });
       $(function () {
         $('#container-1').highcharts({
@@ -358,14 +363,6 @@
     }
   });
 
-</script>
-
-<script type="text/javascript">
-  $(document).ready(function () {
-    setTimeout(function () {
-      $('#topics-table').DataTable();
-    }, 7000)
-  });
 </script>
 </body>
 </html>
