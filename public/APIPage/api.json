@@ -1,0 +1,1469 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Kafka-Manager-Node API",
+    "description": "Move your app forward with the Kafka-Manager-Node API",
+    "version": "1.0.0"
+  },
+  "host": "127.0.0.1:3000",
+  "schemes": [
+    "http"
+  ],
+  "basePath": "/",
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/getclusters": {
+      "get": {
+        "summary": "获取集群列表",
+        "description": "所有集群的信息，包括集群名称，kafka版本，zookeeper地址",
+        "tags": [
+          "Cluster"
+        ],
+        "responses": {
+          "200": {
+            "description": "响应成功",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "clusters": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "description": [
+                      "name",
+                      "kafkaVersion",
+                      "zkHosts",
+                      "operation"
+                    ]
+                  }
+                },
+                "Title": {
+                  "type": "string",
+                  "description": "显示页面标签"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/getCreateClusterFailed": {
+      "get": {
+        "summary": "集群创建失败时的集群名称",
+        "description": "集群创建失败时的集群名称",
+        "tags": [
+          "Cluster"
+        ],
+        "responses": {
+          "200": {
+            "description": "响应成功",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "addClusterName": {
+                  "type": "string",
+                  "description": "新建的cluster集群名称"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/get_ChangeClusterResult": {
+      "get": {
+        "summary": "获取操作信息和集群名称",
+        "description": "获取更改集群方式（Add Cluster,Update Cluster,Disable Cluster,Delete Cluster）以及集群名称",
+        "tags": [
+          "Cluster"
+        ],
+        "responses": {
+          "200": {
+            "description": "响应成功",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "clustername": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/get_ClusterInfo": {
+      "get": {
+        "summary": "集群基本信息",
+        "description": "获取集群基本信息，topic数目，broker数目，zookeeper信息和 kafka 版本信息",
+        "tags": [
+          "Cluster"
+        ],
+        "responses": {
+          "200": {
+            "description": "响应成功",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "clusterInfoname": {
+                  "type": "string",
+                  "description": "集群名称"
+                },
+                "listlen": {
+                  "type": "number",
+                  "description": "topic数目"
+                },
+                "bronum": {
+                  "type": "number",
+                  "description": "broker数目"
+                },
+                "zkHosts": {
+                  "type": "string",
+                  "description": "zookeeper信息"
+                },
+                "Version": {
+                  "type": "string",
+                  "description": "kafka 版本信息"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/get_updateCluster": {
+      "get": {
+        "summary": "修改集群信息",
+        "description": "修改后的集群信息",
+        "tags": [
+          "Cluster"
+        ],
+        "responses": {
+          "200": {
+            "description": "响应成功",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "modifyname": {
+                  "type": "string",
+                  "description": "修改前的集群名"
+                },
+                "clustername": {
+                  "type": "string",
+                  "description": "集群名"
+                },
+                "zkHosts": {
+                  "type": "string",
+                  "description": "zookeeper 地址"
+                },
+                "kafkaVersion": {
+                  "type": "string",
+                  "description": "kafka 版本"
+                },
+                "jmxEnabled": {
+                  "type": "string",
+                  "description": "是否启用jmx"
+                },
+                "jmxUser": {
+                  "type": "string",
+                  "description": "jmx用户名"
+                },
+                "jmxPass": {
+                  "type": "string",
+                  "description": "jmx密码"
+                },
+                "logkafkaEnabled": {
+                  "type": "string",
+                  "description": "是否启用kafkalog"
+                },
+                "pollConsumers": {
+                  "type": "string"
+                },
+                "filterConsumers": {
+                  "type": "string"
+                },
+                "activeOffsetCacheEnabled": {
+                  "type": "string"
+                },
+                "displaySizeEnabled": {
+                  "type": "string"
+                },
+                "tuning.brokerViewUpdatePeriodSeconds": {
+                  "type": "string"
+                },
+                "tuning.clusterManagerThreadPoolSize": {
+                  "type": "string"
+                },
+                "tuning.clusterManagerThreadPoolQueueSize": {
+                  "type": "string"
+                },
+                "tuning.kafkaCommandThreadPoolSize": {
+                  "type": "string"
+                },
+                "tuning.kafkaCommandThreadPoolQueueSize": {
+                  "type": "string"
+                },
+                "tuning.logkafkaCommandThreadPoolSize": {
+                  "type": "string"
+                },
+                "tuning.logkafkaCommandThreadPoolQueueSize": {
+                  "type": "string"
+                },
+                "tuning.logkafkaUpdatePeriodSeconds": {
+                  "type": "string"
+                },
+                "tuning.partitionOffsetCacheTimeoutSecs": {
+                  "type": "string"
+                },
+                "tuning.brokerViewThreadPoolSize": {
+                  "type": "string"
+                },
+                "tuning.brokerViewThreadPoolQueueSize": {
+                  "type": "string"
+                },
+                "tuning.offsetCacheThreadPoolSize": {
+                  "type": "string"
+                },
+                "tuning.offsetCacheThreadPoolQueueSize": {
+                  "type": "string"
+                },
+                "tuning.kafkaAdminClientThreadPoolSize": {
+                  "type": "string"
+                },
+                "tuning.kafkaAdminClientThreadPoolQueueSize": {
+                  "type": "string"
+                },
+                "check_logkafkaEnabled": {
+                  "type": "boolean"
+                },
+                "check_pollConsumers": {
+                  "type": "boolean"
+                },
+                "check_filterConsumers": {
+                  "type": "boolean"
+                },
+                "check_activeOffsetCacheEnabled": {
+                  "type": "boolean"
+                },
+                "check_displaySizeEnabled": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/getTopicList": {
+      "get": {
+        "summary": "获取topic列表信息",
+        "description": "获取已创建的所有topic列表：包含Topic 名称、Partitions数、Replicas数、所分布的broker数、producer 每秒发送的消息数、offset",
+        "tags": [
+          "Topic"
+        ],
+        "responses": {
+          "200": {
+            "description": "响应成功",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "topicList": {
+                  "type": "array",
+                  "description":"消息列表",
+                  "items": {
+                    "$ref":"#/definitions/TopicList"
+                  }
+                },
+                "clusters": {
+                  "type": "string",
+                  "description":"集群名称"
+                },
+                "topicnames": {
+                  "type": "array",
+                  "description":"已创建的topic名称",
+                  "items":{
+                    "type":"string",
+                    "description":"topic name"
+                  }
+                },
+                "offsets": {
+                  "type": "array",
+                  "description":"每个已创建topic对应的offset",
+                  "items":{
+                    "type":"integer",
+                    "description":"offset"
+                  }
+                },
+                "partitions": {
+                  "type": "array",
+                  "description":"每个已创建topic对应的partition数",
+                  "items":{
+                    "type":"integer",
+                    "description":"partition数"
+                  }
+                },
+                "tbrokers": {
+                  "type": "array",
+                  "description":"每个已创建topic对应分布的broker数",
+                  "items":{
+                    "type":"integer",
+                    "description":"所分布的broker数"
+                  }
+                },
+                "replicas": {
+                  "type": "array",
+                  "description":"每个已创建topic对应的replica数",
+                  "items":{
+                    "type":"integer",
+                    "description":"replica数"
+                  }
+                },
+                "producerMsg": {
+                  "type": "array",
+                  "description":"每个已创建的topic对应的生产消息速率",
+                  "items":{
+                    "type":"float",
+                    "description":"生产消息速率"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/getTopicDetails": {
+      "get": {
+        "summary": "获取topic详细信息",
+        "description": "获取某一topic的详细信息：（1）Topic Summary信息：包含Replicas数、Partitions数、所有partition的offset、集群中的broker数、所分布的broker数、preferred replica比例、broker偏移率、broker分布率、under-replicated比率、leader size；（2）Metrics信息：包含平均/每1分钟/每5分钟/每15分钟的吞吐速率；（3）Broker上的Partition信息：包含topic的partition所分布的Broker ID及该broker上的partition数、对应的partition列表、是否偏移；（4）topic的消费信息：消费组名称；（5）partition信息：包含每个partition的ID、offset、leader（broker ID）、replica列表、ISR列表、是否为Preferred Leader、是否Under Replicated、leader size；（6）Highcharts图形数据：offsets的堆积柱形图数据、partition分布的3D气泡图数据、replica分布的散点图数据",
+        "tags": [
+          "Topic"
+        ],
+        "responses": {
+          "200": {
+            "description": "响应成功",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "topicdetails":{
+                  "description":"Topic Summary信息",
+                  "$ref":"#/definitions/TopicDetails"
+                },
+                "clustername": {
+                  "type": "string",
+                  "description":"集群名称"
+                },
+                "topic_name": {
+                  "type": "string",
+                  "description":"topic名称"
+                },
+                "consumers": {
+                  "type": "array",
+                  "description":"消费了该topic的消费组列表",
+                  "items":{
+                    "type":"string",
+                    "description":"consumer group name"
+                  }
+                },
+                "offsets_arr":{
+                  "description":"Highcharts图形数据：offsets的堆积柱形图数据",
+                  "$ref":"#/definitions/OffsetsList"
+                },
+                "partitions_arr": {
+                  "description":"Highcharts图形数据：partition分布的3D气泡图数据",
+                  "$ref":"#/definitions/PartitionsList"
+                },
+                "replicas_arr": {
+                  "description":"Highcharts图形数据：replica分布的散点图数据",
+                  "$ref":"#/definitions/ReplicasList"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/getCreateTopic": {
+      "get": {
+        "summary": "获取创建topic的cluster信息",
+        "description": "获取当前管理集群名.\n",
+        "tags": [
+          "Topic"
+        ],
+        "responses": {
+          "200": {
+            "description": "响应成功",
+            "schema": {
+              "type": "string",
+              "description":"当前管理集群的名称"
+            }
+          },
+          "default": {
+            "description": "Unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/getCreateTopicFailed": {
+      "get": {
+        "summary": "获取创建topic的失败信息",
+        "description": "所创建的topic名已存在时，获取创建topic失败的topic和cluster信息.\n",
+        "tags": [
+          "Topic"
+        ],
+        "responses": {
+          "200": {
+            "description": "响应成功",
+            "schema": {
+              "type": "object",
+              "properties":{
+                "topic_name":{
+                  "type":"string"
+                },
+                "clustername":{
+                  "type":"string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/getCreateTopicResult": {
+      "get": {
+        "summary": "获取创建topic的成功信息",
+        "description": "创建topic成功时，获取topic和cluster信息.\n",
+        "tags": [
+          "Topic"
+        ],
+        "responses": {
+          "200": {
+            "description": "响应成功",
+            "schema": {
+              "type": "object",
+              "properties":{
+                "topic_name":{
+                  "type":"string"
+                },
+                "clustername":{
+                  "type":"string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/get_Brokers": {
+      "get": {
+        "summary": "获取Broker 基本数据",
+        "description": "提供Broker列表页面的展示，主要指标有各个broker的hostname,端口,开启时间以及运行状态等信息，也提供jmx监控的流量信息",
+        "tags": [
+          "Broker"
+        ],
+        "responses": {
+          "200": {
+            "description": "响应成功",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "combinedMetrics": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "description": [
+                      "Messages in",
+                      "Bytes in",
+                      "Bytes out",
+                      "Bytes rejected",
+                      "Failed fetch request",
+                      "Failed produce request"
+                    ]
+                  }
+                },
+                "BrokerList": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/BrokerInfo"
+                  }
+                },
+                "TotalBrokerList": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/BrokerInfo"
+                  }
+                },
+                "aliveBrokerIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/get_BrokersChart": {
+      "get": {
+        "summary": "获取Broker 图表数据",
+        "description": "为highcharts提供画图数据",
+        "tags": [
+          "Broker"
+        ],
+        "responses": {
+          "200": {
+            "description": "响应成功",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "chart1": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "data": {
+                        "type": "array",
+                        "description": "3 items array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "number"
+                          }
+                        }
+                      },
+                      "name": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "categories": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "broker_num": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/get_BrokerDetail": {
+      "get": {
+        "summary": "获取单个Broker 详细数据",
+        "description": "提供某个Broker上的topic信息，主要指标有各个topic的名称,Replication，TotalPartion 以及在这个broker上此topic的partition id,开启时间以及运行状态等信息，也提供jmx监控的流量信息",
+        "tags": [
+          "Broker"
+        ],
+        "responses": {
+          "200": {
+            "description": "响应成功",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "clustername": {
+                  "type": "string"
+                },
+                "brokerlistId": {
+                  "type": "string"
+                },
+                "InOutMessage": {
+                  "type": "array",
+                  "items": {
+                    "type": "array"
+                  }
+                },
+                "brokerMetric": {
+                  "type": "array",
+                  "items": {
+                    "type": "array"
+                  }
+                },
+                "topiclistdetail": {
+                  "type": "array"
+                },
+                "prosysCPU": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/get_ConsumerList": {
+      "get": {
+        "summary": "Consumber List 基本数据",
+        "description": "提供Consumber 列表页面的展示，主要指标有各个消费组名称,类型,消费的topics等信息",
+        "tags": [
+          "Consumer"
+        ],
+        "responses": {
+          "200": {
+            "description": "响应成功",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "clustername": {
+                  "type": "string"
+                },
+                "allconsumeInfo": {
+                  "type": "array",
+                  "description": [
+                    "consume_id",
+                    "type",
+                    "consume_topics"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/get_ConsumTopicInfo": {
+      "get": {
+        "summary": "某个消费组的topic的消费基本数据",
+        "description": "某个消费组中的这个topic的各个partition的消费情况",
+        "tags": [
+          "Consumer"
+        ],
+        "responses": {
+          "200": {
+            "description": "响应成功",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "clustername": {
+                  "type": "string"
+                },
+                "consumergp": {
+                  "type": "string"
+                },
+                "consumerTopic": {
+                  "type": "string"
+                },
+                "totalLag": {
+                  "type": "number"
+                },
+                "percentage": {
+                  "type": "number"
+                },
+                "allInfo": {
+                  "type": "array",
+                  "description": [
+                    "Partition",
+                    "LogSize",
+                    "ConsumberOffset",
+                    "Lag",
+                    "ConsumerInstanceOwner"
+                  ]
+                },
+                "chart1": {
+                  "type": "array",
+                  "description": [
+                    "Partition number",
+                    "number"
+                  ]
+                },
+                "chart2": {
+                  "type": "array",
+                  "description": [
+                    "partition nubmer",
+                    "consumed",
+                    "not consumed"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/clusters/{clustername}": {
+      "post": {
+        "summary": "处理表单提交的数据",
+        "description": "处理表单提交的数据",
+        "tags": [
+          "Cluster"
+        ],
+        "parameters": [
+          {
+            "name": "Cluster Name",
+            "in": "path",
+            "required": true,
+            "description": "集群的名称",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Cluster Zookeeper Hosts",
+            "in": "path",
+            "required": true,
+            "description": "zookeeper Host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Kafka Version",
+            "in": "path",
+            "required": true,
+            "description": "Kafka 版本",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "JMX Auth Username",
+            "in": "path",
+            "required": false,
+            "description": "JMX用户名",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "JMX Auth Password",
+            "in": "path",
+            "required": false,
+            "description": "JMX密码",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "logkafkaEnabled",
+            "in": "path",
+            "required": false,
+            "description": "是否开启消费消息分析",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "pollConsumers",
+            "in": "path",
+            "required": false,
+            "description": "是否开启消费者过滤器",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "filterConsumers",
+            "in": "path",
+            "required": false,
+            "description": "是否开启kafka日志系统",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "activeOffsetCacheEnabled",
+            "in": "path",
+            "required": false,
+            "description": "是否启用offsetcache",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "displaySizeEnabled",
+            "in": "path",
+            "required": false,
+            "description": "是否显示broker和topic占用空间大小",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "brokerViewUpdatePeriodSeconds",
+            "in": "path",
+            "required": true,
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "clusterManagerThreadPoolSize",
+            "in": "path",
+            "required": true,
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "clusterManagerThreadPoolQueueSize",
+            "in": "path",
+            "required": true,
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kafkaCommandThreadPoolSize",
+            "in": "path",
+            "required": true,
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kafkaCommandThreadPoolQueueSize",
+            "in": "path",
+            "required": true,
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "logkafkaCommandThreadPoolSize",
+            "in": "path",
+            "required": true,
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "logkafkaCommandThreadPoolQueueSize",
+            "in": "path",
+            "required": true,
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "logkafkaUpdatePeriodSeconds",
+            "in": "path",
+            "required": true,
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "partitionOffsetCacheTimeoutSecs",
+            "in": "path",
+            "required": true,
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "brokerViewThreadPoolSize",
+            "in": "path",
+            "required": true,
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "brokerViewThreadPoolQueueSize",
+            "in": "path",
+            "required": true,
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "offsetCacheThreadPoolSize",
+            "in": "path",
+            "required": true,
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "offsetCacheThreadPoolQueueSize",
+            "in": "path",
+            "required": true,
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kafkaAdminClientThreadPoolSize",
+            "in": "path",
+            "required": true,
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kafkaAdminClientThreadPoolQueueSize",
+            "in": "path",
+            "required": true,
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "处理成功"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Error": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        }
+      }
+    },
+    "BrokerInfo": {
+      "type": "array",
+      "description": [
+        "brokerid",
+        "hostport",
+        "jmxport",
+        "starttime",
+        "version"
+      ]
+    },
+    "Metrics": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "description": [
+          "Messages in",
+          "Bytes in",
+          "Bytes out",
+          "Bytes rejected",
+          "Failed fetch request",
+          "Failed produce request"
+        ]
+      }
+    },
+    "TopicList": {
+      "type":"object",
+      "properties":{
+        "name":{
+          "type":"string",
+          "description":"topic名"
+        },
+        "partitions":{
+          "type":"integer",
+          "description":"partition数"
+        },
+        "t_brokers":{
+          "type":"integer",
+          "description":"分布的broker数"
+        },
+        "brokers":{
+          "type":"integer",
+          "description":"集群broker数"
+        },
+        "broker_list":{
+          "type":"array",
+          "description":"分布的broker列表",
+          "items":{
+            "type":"object",
+            "properties":{
+              "broker":{
+                "type":"integer",
+                "description":"broker ID"
+              },
+              "partitions":{
+                "type":"integer",
+                "description":"broker上的partition数"
+              },
+              "partition_list":{
+                "type":"array",
+                "description":"broker上的partition列表",
+                "items":{
+                  "type":"integer",
+                  "description":"partition ID"
+                }
+              },
+              "list":{
+                "type":"string",
+                "description":"broker上的partition列表，格式为（ID1,ID2,...）"
+              }
+            }
+          }
+        },
+        "prefferedReplicas":{
+          "type":"integer",
+          "description":"preferred replica比例"
+        },
+        "brokerSpread":{
+          "type":"integer",
+          "description":"broker分布率"
+        },
+        "brokerSkewed":{
+          "type":"integer",
+          "description":"broker偏移率"
+        },
+        "replicas":{
+          "type":"integer",
+          "description":"replica数"
+        },
+        "partitions_list":{
+          "type":"array",
+          "description":"partition列表",
+          "items":{
+            "type":"object",
+            "properties":{
+              "parition_id":{
+                "type":"integer",
+                "description":"parition ID"
+              },
+              "leader":{
+                "type":"integer",
+                "description":"partition的leader"
+              },
+              "replica_list":{
+                "type":"string",
+                "description":"partition的replica列表"
+              },
+              "isr_list":{
+                "type":"string",
+                "description":"ISR列表"
+              },
+              "prefferedLeader":{
+                "type":"bool",
+                "description":"是否为preffered leader"
+              }
+            }
+          }
+        },
+        "leaderSize":{
+          "type":"string",
+          "description":"leaderSize"
+        }
+      }
+    },
+    "TopicDetails": {
+      "type": "object",
+      "description":"消息详情",
+      "properties":{
+        "offset":{
+          "type":"integer",
+          "description":"所有partition的offset总数"
+        },
+        "under_replicated":{
+          "type":"integer",
+          "description":"所有partition中under replicated的比率"
+        },
+        "underReplicated_arr":{
+          "type":"array",
+          "description":"每个partition的under replicated状态",
+          "items":{
+            "type":"object",
+            "properties":{
+              "partition":{
+                "type":"integer",
+                "description":"partition ID"
+              },
+              "under_replicated":{
+                "type":"boolean",
+                "description":"是否为under replicated"
+              }
+            }
+          }
+        },
+        "logPartition_arr":{
+          "type":"array",
+          "description":"有offset数据的partition列表",
+          "items":{
+            "type":"integer",
+            "description":"partition ID"
+          }
+        },
+        "metrics":{
+          "type":"object",
+          "description":"Metrics信息：包含平均/每1分钟/每5分钟/每15分钟的吞吐速率",
+          "properties":{
+            "BytesInPerSec":{
+              "type":"array",
+              "description":"消息的输入速率：字节/秒",
+              "items":{
+                "type":"double",
+                "description":[
+                  "MeanRate",
+                  "OneMinuteRate",
+                  "FiveMinuteRate",
+                  "FifteenMinuteRate"
+                ]
+              }
+            },
+            "BytesOutPerSec":{
+              "type":"array",
+              "description":"消息的输出速率：字节/秒",
+              "items":{
+                "type":"double",
+                "description":[
+                  "MeanRate",
+                  "OneMinuteRate",
+                  "FiveMinuteRate",
+                  "FifteenMinuteRate"
+                ]
+              }
+            },
+            "BytesRejectedPerSec":{
+              "type":"array",
+              "description":"拒绝的消息速率：字节/秒",
+              "items":{
+                "type":"double",
+                "description":[
+                  "MeanRate",
+                  "OneMinuteRate",
+                  "FiveMinuteRate",
+                  "FifteenMinuteRate"
+                ]
+              }
+            },
+            "FailedFetchRequestsPerSec":{
+              "type":"array",
+              "description":"拒绝的消费请求速率：请求/秒",
+              "items":{
+                "type":"double",
+                "description":[
+                  "MeanRate",
+                  "OneMinuteRate",
+                  "FiveMinuteRate",
+                  "FifteenMinuteRate"
+                ]
+              }
+            },
+            "FailedProduceRequestsPerSec":{
+              "type":"array",
+              "description":"拒绝的生产请求速率：请求/秒",
+              "items":{
+                "type":"double",
+                "description":[
+                  "MeanRate",
+                  "OneMinuteRate",
+                  "FiveMinuteRate",
+                  "FifteenMinuteRate"
+                ]
+              }
+            },
+            "MessagesInPerSec":{
+              "type":"array",
+              "description":"消息的输入速率：消息/秒",
+              "items":{
+                "type":"double",
+                "description":[
+                  "MeanRate",
+                  "OneMinuteRate",
+                  "FiveMinuteRate",
+                  "FifteenMinuteRate"
+                ]
+              }
+            }
+          }
+        },
+        "topicSummary":{
+          "type":"object",
+          "description":"topic的Summary信息",
+          "properties":{
+            "name":{
+              "type":"string",
+              "description":"topic名"
+            },
+            "partitions":{
+              "type":"integer",
+              "description":"partition数"
+            },
+            "t_brokers":{
+              "type":"integer",
+              "description":"分布的broker数"
+            },
+            "brokers":{
+              "type":"integer",
+              "description":"集群broker数"
+            },
+            "broker_list":{
+              "type":"array",
+              "description":"分布的broker列表",
+              "items":{
+                "type":"object",
+                "properties":{
+                  "broker":{
+                    "type":"integer",
+                    "description":"broker ID"
+                  },
+                  "partitions":{
+                    "type":"integer",
+                    "description":"broker上的partition数"
+                  },
+                  "partition_list":{
+                    "type":"array",
+                    "description":"broker上的partition列表",
+                    "items":{
+                      "type":"integer",
+                      "description":"partition ID"
+                    }
+                  },
+                  "list":{
+                    "type":"string",
+                    "description":"broker上的partition列表，格式为（ID1,ID2,...）"
+                  }
+                }
+              }
+            },
+            "prefferedReplicas":{
+              "type":"integer",
+              "description":"preferred replica比例"
+            },
+            "brokerSpread":{
+              "type":"integer",
+              "description":"broker分布率"
+            },
+            "brokerSkewed":{
+              "type":"integer",
+              "description":"broker偏移率"
+            },
+            "replicas":{
+              "type":"integer",
+              "description":"replica数"
+            },
+            "partitions_list":{
+              "type":"array",
+              "description":"partition列表",
+              "items":{
+                "type":"object",
+                "properties":{
+                  "parition_id":{
+                    "type":"integer",
+                    "description":"parition ID"
+                  },
+                  "leader":{
+                    "type":"integer",
+                    "description":"partition的leader"
+                  },
+                  "replica_list":{
+                    "type":"string",
+                    "description":"partition的replica列表"
+                  },
+                  "isr_list":{
+                    "type":"string",
+                    "description":"ISR列表"
+                  },
+                  "prefferedLeader":{
+                    "type":"bool",
+                    "description":"是否为preffered leader"
+                  }
+                }
+              }
+            },
+            "leaderSize":{
+              "type":"string",
+              "description":"leaderSize"
+            },
+            "b_spr_class":{
+              "type":"string",
+              "description":"broker spread 比率的等级：用于颜色标记"
+            },
+            "pr_rpl_class":{
+              "type":"string",
+              "description":"preferred replica 比率的等级：用于颜色标记"
+            },
+            "b_skw_class":{
+              "type":"string",
+              "description":"broker skewed 比率的等级：用于颜色标记"
+            },
+            "u_rpl_class":{
+              "type":"string",
+              "description":"under replicated 比率的等级：用于颜色标记"
+            }
+          }
+        }
+      }
+    },
+    "OffsetsList": {
+      "type":"object",
+      "description":"highcharts 堆积柱形图数据：每个partition的offset",
+      "properties":{
+        "topic":{
+          "type":"string",
+          "description":"topic name"
+        },
+        "offsets_arr":{
+          "type":"array",
+          "description":"每个partition对应的offset",
+          "items":{
+            "type":"object",
+            "properties":{
+              "name":{
+                "type":"string",
+                "description":"partition ID，格式：'Partiton1/2/...'"
+              },
+              "data":{
+                "type":"array",
+                "items":{
+                  "type":"integer",
+                  "description":"partition对应的offset值"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "PartitionsList": {
+      "type": "array",
+      "description":"每个partition的leader在broker上的分布",
+      "items":{
+        "type":"object",
+        "properties":{
+          "name":{
+            "type":"string",
+            "description":"partition ID，格式：'Partition X'"
+          },
+          "data":{
+            "type":"array",
+            "description":"highcharts 3D气泡图数据：partition在broker上的分布",
+            "items":{
+              "type":"float",
+              "description":"[所在broker,y轴位置,气泡大小]"
+            }
+          }
+        }
+      }
+    },
+    "ReplicasList": {
+      "type": "array",
+      "description":"每个replica在broker上的分布",
+      "items":{
+        "type":"object",
+        "description":"highcharts 散点图数据：每个replica在broker上的分布",
+        "properties":{
+          "name":{
+            "type":"string",
+            "description":"replica信息，格式：'Replica of Partition X'"
+          },
+          "clolor":{
+            "type":"string",
+            "description":"颜色数据，格式：'rgba(X,X,X,X)'"
+          },
+          "data":{
+            "type":"array",
+            "items":{
+              "type":"integer",
+              "description":"[broker ID,y轴计数]"
+            }
+          }
+        }
+      }
+    }
+  }
+}
